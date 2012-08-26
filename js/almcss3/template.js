@@ -429,7 +429,11 @@ ALMCSS.template = function() {
 		function computeWidths() {
 			var i, result = [];
 			for (i = 0; i < numberOfColumns; i++) {
-				result[i] = i < columnWidths.length ? columnWidths[i] : Width.equal;
+				if (columnWidths && i < columnWidths.length) {
+					result[i] = columnWidths[i];
+				} else {
+					result[i] = Width.equal;
+				}
 			}
 			columnWidths = result;
 		}
@@ -461,6 +465,7 @@ ALMCSS.template = function() {
 		};
 
 		normalizeRows();
+		computeWidths();
 		createSlots();
 
 		template = new Template(rows, columnWidths, slots, selectorText, cssText);
