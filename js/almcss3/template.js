@@ -12,6 +12,9 @@ ALMCSS.template = function() {
 		warn = logger.warn,
 		error = logger.error;
 
+	var TEMPLATE_ID     = 'almcss_tpl',
+		SLOT_ID         = 'slot_';
+
 	var templates = [],
 		positionedElements = [];
 
@@ -20,6 +23,7 @@ ALMCSS.template = function() {
 
 	var TemplateError = function(message) {
 		AlmcssError.call(this, message);
+		error(message);
 	};
 
 	TemplateError.prototype = Object.create(AlmcssError);
@@ -27,7 +31,8 @@ ALMCSS.template = function() {
 	// Slot
 	// ----
 
-	var Slot = function(slotName, startRow, startColumn) {
+	var Slot = function(slotId, slotName, startRow, startColumn) {
+		this.slotId = slotId;
 		this.name = slotName;
 		this.startRow = startRow;
 		this.startColumn = startColumn;
@@ -300,9 +305,13 @@ ALMCSS.template = function() {
 	// Template
 	// --------
 
-	var Template = function(rows, columnWidths, slots, selectorText, cssText) {
+	var Template = function(templateId, rows, columnWidths, slots, selectorText, cssText) {
 
 		return {
+			htmlElement: null,
+			getId: function() {
+				return templateId;
+			},
 			hasSlot: function(slotName) {
 				return slots.hasSlot(slotName);
 			},
@@ -320,6 +329,9 @@ ALMCSS.template = function() {
 			},
 			howManySlots: function() {
 				return slots.size();
+			},
+			getSelectorText: function() {
+				return selectorText;
 			},
 			getCssText: function() {
 				return cssText;
@@ -372,7 +384,9 @@ ALMCSS.template = function() {
 		var template,
 			numberOfRows = rows.length,
 			numberOfColumns = 0,
-			slots = new Slots();
+			slots = new Slots(),
+			templateId = TEMPLATE_ID + templates.length + 1,
+			slotId;
 
 		var computerNumberOfColumns = function() {
 			var i;
@@ -426,7 +440,7 @@ ALMCSS.template = function() {
 			}
 		};
 
-		function computeWidths() {
+		var computeWidths = function() {
 			var i, result = [];
 			for (i = 0; i < numberOfColumns; i++) {
 				if (columnWidths && i < columnWidths.length) {
@@ -436,7 +450,7 @@ ALMCSS.template = function() {
 				}
 			}
 			columnWidths = result;
-		}
+		};
 
 		var createSlots = function() {
 			var row, column, slotName, lastSlot, slot;
@@ -451,7 +465,8 @@ ALMCSS.template = function() {
 						lastSlot = slots.get(slotName);
 					}
 					if (!slots.contains(slotName)) {
-						slot = new Slot(slotName, row, column);
+						slotId = templateId + '_' + SLOT_ID + slotName;
+						slot = new Slot(slotId, slotName, row, column);
 						slots.add(slot);
 					} else {
 						slot = slots.get(slotName);
@@ -468,7 +483,7 @@ ALMCSS.template = function() {
 		computeWidths();
 		createSlots();
 
-		template = new Template(rows, columnWidths, slots, selectorText, cssText);
+		template = new Template(templateId, rows, columnWidths, slots, selectorText, cssText);
 		templates.push(template);
 		return template;
 

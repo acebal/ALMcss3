@@ -1211,7 +1211,8 @@ ALMCSS.parser = function() {
 
 	var Parser = function() {
 
-		var logger = ALMCSS.debug.getLogger('Parser'),
+		var LoggerLevel = ALMCSS.debug.LoggerLevel,
+			logger = ALMCSS.debug.getLogger('Parser', LoggerLevel.all),
 			log = logger.log,
 			info = logger.info,
 			error = logger.error,
@@ -1430,9 +1431,10 @@ ALMCSS.parser = function() {
 			var selectorText = '', hasTypeOrUniversal = false, hasAny = false;
 			if (currentToken.isIdent() || currentToken === Token.ASTERISK) {
 				selectorText = currentToken.isIdent() ? currentToken.name : '*';
+				log('Found a ident or universal selector: ' + selectorText);
 				hasTypeOrUniversal = true;
+				nextToken();
 			}
-			nextToken();
 			while (true) {
 				if (currentToken.isHash()) {
 					selectorText = selectorText + '#' + currentToken.name;
@@ -1447,6 +1449,7 @@ ALMCSS.parser = function() {
 				} else {
 					break;
 				}
+				log('Found a id, class, attribute, pseudo or negation selector: ' + selectorText);
 				hasAny = true;
 				nextToken();
 			}
@@ -1723,9 +1726,17 @@ ALMCSS.parser = function() {
 
 
 		var parse = function(input) {
+			var result;
+			logger.groupCollapsed('Parser');
+			info('Parsing the serialised stylesheet...');
+			log('The css being parsed is: \n' + input);
 			lexer.init(input);
 			nextToken();
-			return parseStyleSheet();
+			result = parseStyleSheet();
+			info('The parser has ended');
+			log('The parsed stylesheet is: ' + result);
+			logger.groupEnd();
+			return result;
 		};
 
 		return {

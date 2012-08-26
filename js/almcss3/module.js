@@ -43,9 +43,7 @@ ALMCSS.module = function() {
 		module.setAttribute('src', file);
 		script.parentNode.insertBefore(module, script);
 		loadedModules.push(file);
-
 	};
-
 	return {
 		include: include
 	};

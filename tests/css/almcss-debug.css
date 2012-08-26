@@ -1,0 +1,33 @@
+.almcss-template {
+    border: 2px solid green;
+}
+
+.almcss-slot {
+    border: 2px solid blue;
+}
+
+.almcss-template-label {
+    display: block;
+    padding: 0.5em 1em 1.2em;
+    font-family: Consolas, 'Lucida Console', 'Lucida Sans Unicode', 'Courier New', Courier, monospace;
+    font-size: small;
+    font-weight: bold;
+    background: green;
+    color: white;
+    position: absolute;
+    top: 0; left: 1em;
+    z-index: 20;
+}
+
+.almcss-slot-label {
+    display: block;
+    padding: 0.5em 1em 1.2em;
+    font-family: Consolas, 'Lucida Console', 'Lucida Sans Unicode', 'Courier New', Courier, monospace;
+    font-size: small;
+    font-weight: bold;
+    background: blue;
+    color: white;
+    position: absolute;
+    top: 0; right: 1em;
+    z-index: 10;
+}

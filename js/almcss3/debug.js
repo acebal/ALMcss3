@@ -14,7 +14,7 @@
 
 var ALMCSS = ALMCSS || {};
 
-ALMCSS.module.include(['lib/firebug-lite.js']);
+//ALMCSS.module.include(['lib/firebug-lite.js']);
 
 ALMCSS.debug = function () {
 
@@ -24,9 +24,9 @@ ALMCSS.debug = function () {
 		loggers = {},
 		console = window.console;
 
-	var init = function () {
+	/*
+	 var init = function () {
 
-		/*
 		var console = window.console;
 
 		// This array contains the names of the method that are going to be
@@ -74,8 +74,8 @@ ALMCSS.debug = function () {
 				};
 			}
 		}
-		*/
 	};
+	*/
 
 	// Returns the previously created logger of that name, if it exists, or
 	// creates and returns a new one, adding it to the list of created
@@ -197,10 +197,10 @@ ALMCSS.debug = function () {
 		}
 	};
 
-	init();
+	/* init(); */
 
 	return {
-		init: init,
+		// init: init,
 		LoggerLevel: LoggerLevel,
 		getLogger: getLogger,
 		Assert: Assert,

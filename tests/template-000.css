@@ -1,0 +1,62 @@
+body {
+    display: "a"
+             "b"
+             "c";
+}
+
+body {
+    background: #fbf1cd;
+    margin: 0;
+    padding: 0;
+    font-family: Georgia, 'Palatino Linotype', serif;
+    font-size: 1.3em;
+    line-height: 1.3;
+}
+
+acronym, abbr {
+    text-decoration: none;
+    border-bottom: none;
+}
+
+#content {
+    max-width: 37em;
+    margin: 0 auto;
+    padding: 1em;
+    padding-bottom: 3em;
+}
+
+h1 {
+    margin: 0;
+    padding: 0.4em 1em;
+    background: #311d0f;
+    color: #ffffff;
+    font-size: 4em;
+    font-weight: normal;
+    text-transform: uppercase;
+    text-align: center;
+}
+
+.figure {
+    margin: 1.6em auto;
+}
+
+.figure img {
+    border: 32px solid #fff;
+}
+
+.figure p {
+    font-size: 0.8em;
+    margin-top: 0.2em;
+}
+
+#footer {
+    padding: 0.6em 1em 1em;
+    background: #4a4a4a;
+    color: #ccc;
+    font-size: 0.68em;
+}
+
+#footer img {
+    float: left;
+    margin-right: 1em;
+}

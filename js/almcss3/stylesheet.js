@@ -10,27 +10,7 @@ ALMCSS.stylesheet = function() {
 	var log = logger.log;
 	var warn = logger.warn;
 
-	//var cssCache = {};
 	var cssCache = '';
-	var howManyLoaded = 0;
-
-	// Initialise the `cssCache` object that will store the full text of all
-	// the style sheets associated to this document, using as a property for
-	// each style sheet the value of its `href` property, or `'inline'` for
-	// the style included with the STYLE element.
-	//
-	// This function creates the properties for all the style sheets, which are
-	// initially set to `false`, until the content of each style sheet is stored
-	// in its associate property.
-	//
-	var init = function() {
-		assert(document.styleSheets, 'This browser does not support document.styleSheets');
-		for (var i = 0; i < document.styleSheets.length; i++) {
-			var sheet = document.styleSheets[i];
-			var key = sheet.href ? sheet.href : 'inline';
-			cssCache[key] = false;
-		}
-	};
 
 	var getPath = function() {
 		var result = window.location.href.substr(0, (location.href).lastIndexOf('/') + 1);
@@ -160,13 +140,12 @@ ALMCSS.stylesheet = function() {
 	// with a LINK element.
 
 	var loadStyleSheets = function() {
-		//init();
-		//assert(cssCache.length === document.styleSheets.length, "'init' has not been called");
-		logger.group('Loading style sheets...');
+		logger.groupCollapsed('Style sheet loader');
+		logger.info('Loading style sheets...');
 		for (var i = 0; i < document.styleSheets.length; i++) {
 			loadCssCache(document.styleSheets[i]);
 		}
-		log('All style sheets have been loaded.');
+		logger.info('All style sheets have been loaded:\n');
 		logger.info(cssCache);
 		logger.groupEnd();
 		return cssCache;
@@ -174,7 +153,8 @@ ALMCSS.stylesheet = function() {
 
 	return {
 		readExternalStyleSheet: readExternalStyleSheet,
-		readFile: readFile
+		readFile: readFile,
+		loadStyleSheets: loadStyleSheets
 	};
 
 }();
