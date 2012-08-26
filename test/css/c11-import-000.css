@@ -1,0 +1,5 @@
+@import url(support/a-green.css);
+@import "support/b-green.css";
+.c { color: green; }
+@import url(support/c-red.css);
+<!-- .d { color: green; } -->

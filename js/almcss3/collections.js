@@ -1,4 +1,4 @@
-ALMCSS.basis.collections = function() {
+ALMCSS.collections = function() {
 
 	var List = function(elements) {
 		this.elements = elements;

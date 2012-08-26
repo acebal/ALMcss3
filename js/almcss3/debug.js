@@ -20,11 +20,13 @@ ALMCSS.debug = function () {
 
 	'use strict';
 
-	var debug = true;
-	var loggers = {};
+	var debug = true,
+		loggers = {},
+		console = window.console;
 
 	var init = function () {
 
+		/*
 		var console = window.console;
 
 		// This array contains the names of the method that are going to be
@@ -67,41 +69,112 @@ ALMCSS.debug = function () {
 					if (debug) {
 						console[method].apply(console, arguments);
 					} else {
-						Logger.prototype[method] = function () {
-						};
+						Logger.prototype[method] = function () {};
 					}
 				};
 			}
 		}
+		*/
 	};
 
 	// Returns the previously created logger of that name, if it exists, or
 	// creates and returns a new one, adding it to the list of created
 	// loggers.
 
-	var getLogger = function (name) {
+	var getLogger = function (name, level) {
 
 		Assert.isString(name, 'A valid name must be provided for getting a logger');
 
 		if (!loggers[name]) {
-			loggers[name] = new Logger(name);
+			loggers[name] = new Logger(name, level);
 		}
 		return loggers[name];
 	};
+
+	var LoggerLevel = function (level, name) {
+
+		return {
+			valueOf: function() {
+				return level;
+			},
+			toString: function() {
+				return name;
+			}
+		};
+
+	};
+
+	LoggerLevel.off     = new LoggerLevel(0, 'off');
+	LoggerLevel.error   = new LoggerLevel(1, 'error');
+	LoggerLevel.warn    = new LoggerLevel(2, 'warn');
+	LoggerLevel.info    = new LoggerLevel(3, 'info');
+	LoggerLevel.log     = new LoggerLevel(4, 'log');
+	LoggerLevel.all     = new LoggerLevel(5, 'all');
 
 	// Logger
 	// ------
 	//
 
-	var Logger = function (name) {
-		this.name = name;
+	var Logger = function (name, level) {
+
+		if (level === undefined) {
+			level = LoggerLevel.info;
+		}
+
+		var isVisible = function(messageLevel) {
+			return level >= messageLevel;
+		};
+
+		return {
+			log: function(object /* , object, object... */) {
+				if (console && isVisible(LoggerLevel.log)) {
+					console.log.apply(console, arguments);
+				}
+			},
+			info: function(object /* , object, object... */) {
+				if (console && isVisible(LoggerLevel.info)) {
+					console.info.apply(console, arguments);
+				}
+			},
+			warn: function(object /* , object, object... */) {
+				if (console && isVisible(LoggerLevel.warn)) {
+					console.warn.apply(console, arguments);
+				}
+			},
+			error: function(object /* , object, object... */) {
+				if (console && isVisible(LoggerLevel.error)) {
+					console.error.apply(console, arguments);
+				}
+			},
+			group: function(object /* , object, object... */) {
+				if (console) {
+					console.group.apply(console, arguments);
+				}
+			},
+			groupCollapsed: function(object /* , object, object... */) {
+				if (console) {
+					console.groupCollapsed.apply(console, arguments);
+				}
+			},
+			groupEnd: function(object /* , object, object... */) {
+				if (console) {
+					console.groupEnd.apply(console, arguments);
+				}
+			},
+			trace: function(object /* , object, object... */) {
+				if (console) {
+					console.trace.apply(console, arguments);
+				}
+			}
+		};
 	};
 
 	// Assertions
 	// ----------
 
 	var AssertionError = function (message) {
-		Error.call(this, 'AssertionError', message);
+		this.name = 'AssertionError';
+		this.message = message || '';
 	};
 
 	AssertionError.prototype = Object.create(Error.prototype);
@@ -124,12 +197,16 @@ ALMCSS.debug = function () {
 		}
 	};
 
+	init();
+
 	return {
 		init: init,
+		LoggerLevel: LoggerLevel,
 		getLogger: getLogger,
 		Assert: Assert,
 		assert: Assert.isTrue,
-		AssertionError: AssertionError
+		AssertionError: AssertionError,
+		isLoaded: true
 	};
 
 }();

@@ -1,0 +1,11 @@
+body {
+    color: green;
+    background-color: #ccc;
+    font-family: Arial, Helvetica, Verdana, sans-serif;
+    line-height: 1.4;
+    border: 2px solid green;
+}
+
+h1 {
+    color: red;
+}
