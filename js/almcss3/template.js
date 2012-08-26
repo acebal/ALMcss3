@@ -313,7 +313,7 @@ ALMCSS.template = function() {
 				return templateId;
 			},
 			hasSlot: function(slotName) {
-				return slots.hasSlot(slotName);
+				return slots.contains(slotName);
 			},
 			getSlot: function(slotName) {
 				return slots.get(slotName);
@@ -495,6 +495,7 @@ ALMCSS.template = function() {
 
 	return {
 		templates: templates,
+		positionedElements: positionedElements,
 		TemplateError: TemplateError,
 		Slot: Slot,
 		Length: Length,

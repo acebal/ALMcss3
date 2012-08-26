@@ -91,6 +91,8 @@ var ALMCSS = function() {
 			info = logger.info,
 			templates = ALMCSS.template.templates,
 			createTemplateElements = ALMCSS.template.dom.createTemplateElements,
+			positionedElements = ALMCSS.template.positionedElements,
+			moveElementsIntoSlots = ALMCSS.template.dom.moveElementsIntoSlots,
 			i;
 
 		info('Starting the main function of ALMCSS3...');
@@ -108,6 +110,7 @@ var ALMCSS = function() {
 			info('No templates were found');
 		}
 		createTemplateElements(templates);
+		moveElementsIntoSlots(positionedElements);
 	};
 
 	var loadModules = function() {

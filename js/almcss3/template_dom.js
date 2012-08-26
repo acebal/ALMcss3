@@ -32,6 +32,7 @@ ALMCSS.template.dom = function() {
 			slotLabel.innerHTML = slot.slotId;
 			slotElement.appendChild(slotLabel);
 			template.htmlElement.appendChild(slotElement);
+			slot.htmlElement = slotElement;
 		}
 	};
 
@@ -48,7 +49,9 @@ ALMCSS.template.dom = function() {
 		// Currently, it is assumed that templates are defined using a single selector per CSS rule
 		var containerElement = document.querySelector(template.getSelectorText());
 		containerElement.appendChild(templateElement);
+		// The HtmlElement object of the DOM **is modified**
 		containerElement.isTemplate = true;
+		containerElement.template = template;
 		template.htmlElement = containerElement;
 		// Create the slots
 		createSlotElements(template);
@@ -61,8 +64,44 @@ ALMCSS.template.dom = function() {
 		}
 	};
 
+	var getTemplateAncestor = function(element, slotName) {
+		var template;
+		log("Looking for a template ancestor for the slot '" + slotName + "'...")
+		while (element.parentNode) {
+			element = element.parentNode;
+			if (element.isTemplate) {
+				template = element.template;
+				if (template.hasSlot(slotName)) {
+					info('A template ancestor was found');
+					log('The ancestor template is:\n' + template);
+					return template;
+				} else {
+					log("A template ancestor was found, but it did not contain a slot named '" +
+						slotName + "', so we continue traversing up the DOM tree...");
+				}
+			}
+		}
+		warn("No template ancestor with a slot '" + slotName + "' was found");
+	};
+
+	var moveElementsIntoSlots = function(positionedElements) {
+		var i, j, elements, slotName, templateAncestor, slotElement;
+		for (i = 0; i < positionedElements.length; i++) {
+			slotName = positionedElements[i].slotName;
+			elements = document.querySelectorAll(positionedElements[i].selectorText);
+			for (j = 0; j < elements.length; j++) {
+				templateAncestor = getTemplateAncestor(elements[j], slotName);
+				if (templateAncestor) {
+					slotElement = templateAncestor.getSlot(slotName).htmlElement;
+					slotElement.appendChild(elements[j].parentNode.removeChild(elements[j]));
+				}
+			}
+		}
+	};
+
 	return {
-		createTemplateElements: createTemplateElements
+		createTemplateElements: createTemplateElements,
+		moveElementsIntoSlots: moveElementsIntoSlots
 	};
 
 }();

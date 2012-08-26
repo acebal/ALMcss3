@@ -4,6 +4,12 @@ body {
              "c";
 }
 
+#header     { position: c; }
+#content    { position: a; }
+#footer     { position: b; }
+
+ul          { position: c; }
+
 body {
     background: #fbf1cd;
     margin: 0;

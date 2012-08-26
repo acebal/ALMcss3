@@ -1648,9 +1648,12 @@ ALMCSS.parser = function() {
 				info('A template has been matched:\n' + template);
 
 			// Is it a `position` property with the name of a slot as a value?
-			} else if (property === 'position' && currentToken.isIdent()) {
+			} else if (property === 'position' && currentToken.isIdent() &&
+					!currentToken.isIdent('absolute') && !currentToken.isIdent('relative') &&
+					!currentToken.isIdent('static') && !currentToken.isIdent('fixed')) {
 				info("Found a 'position' property with a identifier " +
-					'as a value: assuming it is the name of a slot');
+					'as a value: assuming it is the name of a slot ' +
+					'(' + rule.selectorText + ' => at slot ' + currentToken.name + ')');
 				addPositionedElement(rule.selectorText, currentToken.name);
 			}
 
