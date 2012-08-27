@@ -99,6 +99,62 @@ ALMCSS.template = function() {
 		}
 	};
 
+	Slot.prototype.getIntrinsicMinimumWidth = function() {
+
+		var computeIntrinsicMinimumWidth = function() {
+
+			if (this.name === Slot.emptySlot) {
+				return 0;
+			}
+			// It is a letter or '@'
+			if (this.colspan > 1) {
+				return 0;
+			}
+			// Otherwise (it is a letter or '@' slot of a single column) we need
+			// to do some DOM manipulation to calculate its intrinsic minimumWidth
+			this.htmlElement.style.float = 'left';
+			var result = getComputedStyle(this.htmlElement, 'width');
+			//this.htmlElement.style.float = 'none';
+			return result;
+		};
+
+		assert(this.htmlElement, 'For computing the intrinsic minimum width of a slot ' +
+			'first it is needed to have done the process of moving the elements into it');
+
+		if (!this.intrinsicMinimumWidth) {
+			this.intrinsicMinimumWidth = computeIntrinsicMinimumWidth();
+		}
+		return this.intrinsicMinimumWidth;
+	};
+
+	Slot.prototype.getIntrinsicPreferredWidth = function() {
+
+		var computeIntrinsicMinimumWidth = function() {
+
+			if (this.name === Slot.emptySlot) {
+				return 0;
+			}
+			// It is a letter or '@'
+			if (this.colspan > 1) {
+				return 0;
+			}
+			// Otherwise (it is a letter or '@' slot of a single column) we need
+			// to do some DOM manipulation to calculate its intrinsic minimumWidth
+			this.htmlElement.style.float = 'left';
+			var result = getComputedStyle(this.htmlElement, 'width');
+			//this.htmlElement.style.float = 'none';
+			return result;
+		};
+
+		assert(this.htmlElement, 'For computing the intrinsic minimum width of a slot ' +
+			'first it is needed to have done the process of moving the elements into it');
+
+		if (!this.intrinsicMinimumWidth) {
+			this.intrinsicMinimumWidth = computeIntrinsicMinimumWidth();
+		}
+		return this.intrinsicMinimumWidth;
+	};
+
 	Slot.prototype.valueOf = function() {
 		return this.name;
 	};
@@ -300,6 +356,54 @@ ALMCSS.template = function() {
 
 	Row.prototype.toString = function() {
 		return '"' + this.columns + '" /' + this.height;
+	};
+
+	var Column = function(index, columnWidth, slots) {
+
+		var intrinsicMinimumWidth,
+			intrinsicPreferredWidth;
+
+		var computeWidthForLength = function() {
+			assert(columnWidth instanceof Length);
+		};
+
+		var computeWidthForEqual = function() {
+			assert(columnWidth === Width.equal);
+			intrinsicMinimumWidth = 0;
+			intrinsicPreferredWidth = Number.MAX_VALUE;
+		};
+
+		var computeWidthForMinContent = function() {
+			assert(columnWidth === Width.minContent);
+			var i, largestIntrinsicMinimumWidth = 0;
+			for (i = 0; i < slots.length; i++) {
+				if (slots[i].getIntrinsicMinimumWidth() > largestIntrinsicMinimumWidth) {
+					largestIntrinsicMinimumWidth = slots[i].getIntrinsicMinimumWidth();
+				}
+			}
+			intrinsicMinimumWidth = intrinsicPreferredWidth = largestIntrinsicMinimumWidth;
+		};
+
+		var computeWidth = function() {
+			if (columnWidth instanceof Length) {
+				intrinsicMinimumWidth = Length;
+				intrinsicPreferredWidth = Length;
+			} else if (columnWidth === Width.equal) {
+				intrinsicMinimumWidth = 0;
+				intrinsicPreferredWidth = Number.MAX_VALUE;
+			} else if (columnWidth === Width.minContent) {
+				var i, largestIntrinsicMinimumWidth = 0;
+				for (i = 0; i < slots.length; i++) {
+					if (slots[i].getIntrinsicMinimumWidth() > largestIntrinsicMinimumWidth) {
+						largestIntrinsicMinimumWidth = slots[i].getIntrinsicMinimumWidth();
+					}
+				}
+				intrinsicMinimumWidth = intrinsicPreferredWidth = largestIntrinsicMinimumWidth;
+			} else if (columnWidth === Width.maxContent) {
+
+			}
+		};
+
 	};
 
 	// Template
