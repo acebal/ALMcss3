@@ -245,7 +245,7 @@ ALMCSS.template = function() {
 				'row heights nor column widths, and make the template illegal: ' + value + unit);
 		}
 		this.value = value;
-		this.unit = unit;
+		this.unit = unit ? unit : '';
 	};
 
 	Length.prototype.valueOf = function() {
@@ -253,7 +253,7 @@ ALMCSS.template = function() {
 	};
 
 	Length.prototype.toString = function() {
-		return this.valueOf();
+		return this.value + this.unit;
 	};
 
 	var Height = function(value) {
@@ -318,6 +318,17 @@ ALMCSS.template = function() {
 		return result;
 	};
 
+    var containsSlot = function(array, slotName) {
+        for (var i = 0; i < array.length; i++) {
+            assert(array[i].name, 'This was supposed to be an array of slots ' +
+                '(with valid names): ' + array);
+            if (array[i].name === slotName) {
+                return true;
+            }
+        }
+        return false;
+    };
+
 	// Row
 	// ---
 
@@ -348,12 +359,17 @@ ALMCSS.template = function() {
 		return '"' + this.columns + '" /' + this.height;
 	};
 
-	var Column = function(index, columnWidth, slots) {
+	var Column = function(index, columnWidth, slots, htmlElement) {
 
-		var intrinsicMinimumWidth,
-			intrinsicPreferredWidth;
+		var intrinsicMinimumWidth = undefined,
+			intrinsicPreferredWidth = undefined;
 
 		var computeIntrinsicMinimumAndIntrinsicPreferredWidths = function() {
+
+            info('Computing the intrinsic minimum and preferred widths from column: ' + index +
+                ' (' + columnWidth + ')');
+
+            var lengthToPixels = ALMCSS.length.lengthToPixels;
 
 			var i, largestIntrinsicMinimumWidth = 0, largestIntrinsicPreferredWidth = 0;
 
@@ -361,8 +377,8 @@ ALMCSS.template = function() {
 			// intrinsic preferred widths both equal to that length.
 
 			if (columnWidth instanceof Length) {
-				intrinsicMinimumWidth = Length;
-				intrinsicPreferredWidth = Length;
+				intrinsicMinimumWidth = lengthToPixels(columnWidth);
+				intrinsicPreferredWidth = lengthToPixels(columnWidth);
 			}
 
 			// A column with a `columnWidth` of '*' has an infinite intrinsic preferred
@@ -410,7 +426,48 @@ ALMCSS.template = function() {
 			else {
 				assert(false, 'A non recognised value for column width: ' + columnWidth);
 			}
+
+            info('Intrinsic minimum width = ' + intrinsicMinimumWidth);
+            info('Intrinsic preferred width = ' + intrinsicPreferredWidth);
 		};
+
+        return {
+            getIndex: function() {
+                return index;
+            },
+            getWidth: function() {
+                return columnWidth;
+            },
+            getComputedWidth: function() {
+                assert(this.computedWidth !== undefined, 'The computed width for this ' +
+                    'column has not yet been set (this method can not be called before ' +
+                    'the template has performed de sizing algorithm)');
+                return this.computedWidth;
+            },
+            setComputedWidth: function(width) {
+                this.computedWidth = width;
+            },
+            getIntrinsicMinimumWidth: function() {
+                if (intrinsicMinimumWidth === undefined) {
+                    computeIntrinsicMinimumAndIntrinsicPreferredWidths();
+                }
+                return intrinsicMinimumWidth;
+            },
+            getIntrinsicPreferredWidth: function() {
+                if (intrinsicPreferredWidth === undefined) {
+                    computeIntrinsicMinimumAndIntrinsicPreferredWidths();
+                }
+                return intrinsicPreferredWidth;
+            },
+            toString: function() {
+                return 'Column ' + index + '{\n' +
+                    '  columnWidth: ' + columnWidth + ',\n' +
+                    '  computedWidth: ' + this.computedWidth + '\n' +
+                    '  intrinsicMinimumWidth: ' + intrinsicMinimumWidth + ',\n' +
+                    '  intrinsicPreferredWidth: ' + intrinsicPreferredWidth + '\n' +
+                    '}';
+            }
+        };
 
 	};
 
@@ -419,8 +476,38 @@ ALMCSS.template = function() {
 
 	var Template = function(templateId, rows, columnWidths, slots, selectorText, cssText) {
 
+        // An array of `Column` objects
+        var columns = [];
+
+        var getSlotsOfColumn = function(columnIndex) {
+            var i, j, row, slotName, result = [];
+            for (i = 0; i < rows.length; i++) {
+                slotName = rows[i].columns.charAt(columnIndex);
+                if (!containsSlot(result, slotName)) {
+                    result.push(slots.get(slotName));
+                }
+            }
+        };
+
+        var createColumns = function(htmlElement) {
+            var i, slots, column;
+            for (i = 0; i < columnWidths; i++) {
+                slots = getSlotsOfColumn(i);
+                column = new Column(i, columnWidths[i], slots, htmlElement);
+                columns.push(column);
+            }
+        };
+
+        var sumOfIntrinsicMinimumWidths = function() {
+            var i, result = 0;
+            for (i = 0; i < columns.length; i++) {
+                result = result + columns[i].getIntrinsicMinimumWidth();
+            }
+            return result;
+        };
+
 		return {
-			htmlElement: null,
+			/* htmlElement: null, */
 			getId: function() {
 				return templateId;
 			},
@@ -457,7 +544,21 @@ ALMCSS.template = function() {
 					result = result + columnWidths[i] + ' ';
 				}
 				return result;
-			}
+			},
+            computeWidths: function() {
+                assert(this.htmlElement, 'computeWidths can not be called before ' +
+                    'having created the associated DOM elements for the template');
+                info('Computing widths for template ' + templateId);
+                log('First, column objects must be created for this template...');
+                createColumns(this.htmlElement);
+                log('OK, they have been created:\n' + columns);
+                log('Now, computing the widths...');
+                log('(Currently, all templates are computed as is they had an a-priori width)');
+
+                // TODO
+                // if (sumOfIntrinsicMinimumWidths() > htmlElement [...]
+
+            }
 		};
 
 	}; // Template
@@ -552,7 +653,7 @@ ALMCSS.template = function() {
 			}
 		};
 
-		var computeWidths = function() {
+		var normalizeWidths = function() {
 			var i, result = [];
 			for (i = 0; i < numberOfColumns; i++) {
 				if (columnWidths && i < columnWidths.length) {
@@ -592,7 +693,7 @@ ALMCSS.template = function() {
 		};
 
 		normalizeRows();
-		computeWidths();
+		normalizeWidths();
 		createSlots();
 
 		template = new Template(templateId, rows, columnWidths, slots, selectorText, cssText);

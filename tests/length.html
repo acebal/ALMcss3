@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>ALMCSS3 - Lengths</title>
+	<meta charset=utf-8 />
+	<style>
+		body {
+			font-family: Helvetica, Arial, sans-serif;
+			font-size: 1.1em;
+			line-height: 1.4;
+			color: #404040;
+		}
+
+		div {
+			background: #ddd;
+		}
+
+		#one {
+			width: 500px;
+			font-size: 20px;
+		}
+
+		#two {
+			float: left;
+		}
+	</style>
+	<script type="text/javascript" src="../js/almcss3/base.js"></script>
+	<script type="text/javascript" src="../js/almcss3/debug.js"></script>
+	<script type="text/javascript" src="../js/almcss3/template.js"></script>
+	<script type="text/javascript" src="../js/almcss3/length.js"></script>
+	<script>
+
+		function init() {
+			'use strict';
+
+			var Length = ALMCSS.template.Length,
+				lengthToPixels = ALMCSS.length.lengthToPixels;
+
+			var length, divOne, divTwo;
+
+			divOne = document.getElementById('one');
+			divTwo = document.getElementById('two');
+
+			length = new Length(200, 'px');
+
+			console.info(lengthToPixels(length, divOne));
+			console.info(lengthToPixels(length, divTwo));
+
+			length = new Length(3, 'em');
+			console.info(lengthToPixels(length, divOne));
+			console.info(lengthToPixels(length, divTwo));
+
+			length = new Length(100, '%');
+			console.info(lengthToPixels(length, divOne));
+			console.info(lengthToPixels(length, divTwo));
+		}
+
+		window.onload = init;
+
+	</script>
+</head>
+<body>
+	<h1>Length to pixels</h1>
+
+	<div id="one">
+		<h2>One</h2>
+	</div>
+
+	<div id="two">
+		<h2>Two</h2>
+		<p>This is floated.</p>
+	</div>
+</body>
+</html>
