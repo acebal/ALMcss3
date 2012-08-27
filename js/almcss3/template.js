@@ -101,58 +101,48 @@ ALMCSS.template = function() {
 
 	Slot.prototype.getIntrinsicMinimumWidth = function() {
 
-		var computeIntrinsicMinimumWidth = function() {
-
-			if (this.name === Slot.emptySlot) {
-				return 0;
-			}
-			// It is a letter or '@'
-			if (this.colspan > 1) {
-				return 0;
-			}
-			// Otherwise (it is a letter or '@' slot of a single column) we need
-			// to do some DOM manipulation to calculate its intrinsic minimumWidth
-			this.htmlElement.style.float = 'left';
-			var result = getComputedStyle(this.htmlElement, 'width');
-			//this.htmlElement.style.float = 'none';
-			return result;
-		};
+		var minimumWidth = ALMCSS.width.computeIntrinsicMinimumWidth;
 
 		assert(this.htmlElement, 'For computing the intrinsic minimum width of a slot ' +
 			'first it is needed to have done the process of moving the elements into it');
 
-		if (!this.intrinsicMinimumWidth) {
-			this.intrinsicMinimumWidth = computeIntrinsicMinimumWidth();
+		if (this.intrinsicMinimumWidth) {
+			return this.intrinsicMinimumWidth;
 		}
+
+		if (this.name === Slot.emptySlot) {
+			return 0;
+		}
+		// It is a letter or '@'
+		if (this.colspan > 1) {
+			return 0;
+		}
+		// Otherwise (it is a letter or '@' slot of a single column) we need
+		// to do some DOM manipulation to calculate its intrinsic minimum width
+		this.intrinsicMinimumWidth = minimumWidth(this.htmlElement);
 		return this.intrinsicMinimumWidth;
 	};
 
 	Slot.prototype.getIntrinsicPreferredWidth = function() {
 
-		var computeIntrinsicMinimumWidth = function() {
-
-			if (this.name === Slot.emptySlot) {
-				return 0;
-			}
-			// It is a letter or '@'
-			if (this.colspan > 1) {
-				return 0;
-			}
-			// Otherwise (it is a letter or '@' slot of a single column) we need
-			// to do some DOM manipulation to calculate its intrinsic minimumWidth
-			this.htmlElement.style.float = 'left';
-			var result = getComputedStyle(this.htmlElement, 'width');
-			//this.htmlElement.style.float = 'none';
-			return result;
-		};
+		var preferredWidth = ALMCSS.width.computeIntrinsicPreferredWidth;
 
 		assert(this.htmlElement, 'For computing the intrinsic minimum width of a slot ' +
 			'first it is needed to have done the process of moving the elements into it');
 
-		if (!this.intrinsicMinimumWidth) {
-			this.intrinsicMinimumWidth = computeIntrinsicMinimumWidth();
+		if (this.intrinsicPreferredWidth) {
+			return this.intrinsicPreferredWidth;
 		}
-		return this.intrinsicMinimumWidth;
+
+		// The intrinsic preferred width of a '.' is 0
+		if (this.name === Slot.emptySlot) {
+			return 0;
+		}
+		// The intrinsic preferred width of a letter or '@' is the intrinsic
+		// preferred width as defined by the CSS3 Box Module
+		// preferred width as defined by the CSS3 Box Module
+		this.intrinsicPreferredWidth = preferredWidth(this.htmlElement);
+		return this.intrinsicPreferredWidth;
 	};
 
 	Slot.prototype.valueOf = function() {
@@ -196,7 +186,7 @@ ALMCSS.template = function() {
 						return slots[i];
 					}
 				}
- 			},
+			},
 
 			add: function(slot) {
 				assert(!this.contains(slot.name),

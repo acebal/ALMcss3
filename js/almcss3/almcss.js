@@ -122,6 +122,7 @@ var ALMCSS = function() {
 			'stylesheet.js',
 			'css.js',
 			'parser.js',
+			'width.js',
 			'template.js',
 			'template_dom.js'
 		], init);
