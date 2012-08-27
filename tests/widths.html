@@ -17,6 +17,33 @@
 
     </style>
     <script type="text/javascript" src="../js/almcss3/width.js"></script>
+    <script>
+        function getWidths(element) {
+
+            'use strict';
+
+            var width = ALMCSS.width.getWidth,
+                preferred = ALMCSS.width.computeIntrinsicPreferredWidth,
+                minimum = ALMCSS.width.computeIntrinsicMinimumWidth;
+
+            console.group(element.id);
+            console.info('Current width: ' + width(element));
+            console.info('Preferred width: ' + preferred(element));
+            console.info('Minimum width: ' + minimum(element));
+            console.groupEnd();
+        }
+
+        window.onload = function() {
+
+            'use strict';
+
+            var divs = document.getElementsByTagName('div');
+            for (var i = 0; i < divs.length; i++) {
+                getWidths(divs[i]);
+            }
+
+        };
+    </script>
 </head>
 <body>
     <h1>Widths</h1>
