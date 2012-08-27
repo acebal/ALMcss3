@@ -295,9 +295,9 @@ ALMCSS.template = function() {
 	};
 
 	var MinMax = function(p, q) {
-		warn('min-max is not yet supported by ALMCSS');
 		Width.call(this, 'min-max');
-		// TODO
+		this.p = p;
+		this.q = q;
 	};
 
 	// Auxiliary functions
@@ -353,44 +353,62 @@ ALMCSS.template = function() {
 		var intrinsicMinimumWidth,
 			intrinsicPreferredWidth;
 
-		var computeWidthForLength = function() {
-			assert(columnWidth instanceof Length);
-		};
+		var computeIntrinsicMinimumAndIntrinsicPreferredWidths = function() {
 
-		var computeWidthForEqual = function() {
-			assert(columnWidth === Width.equal);
-			intrinsicMinimumWidth = 0;
-			intrinsicPreferredWidth = Number.MAX_VALUE;
-		};
+			var i, largestIntrinsicMinimumWidth = 0, largestIntrinsicPreferredWidth = 0;
 
-		var computeWidthForMinContent = function() {
-			assert(columnWidth === Width.minContent);
-			var i, largestIntrinsicMinimumWidth = 0;
-			for (i = 0; i < slots.length; i++) {
-				if (slots[i].getIntrinsicMinimumWidth() > largestIntrinsicMinimumWidth) {
-					largestIntrinsicMinimumWidth = slots[i].getIntrinsicMinimumWidth();
-				}
-			}
-			intrinsicMinimumWidth = intrinsicPreferredWidth = largestIntrinsicMinimumWidth;
-		};
+			// A column with a `columnWidth` of a given length has intrinsic minimum and
+			// intrinsic preferred widths both equal to that length.
 
-		var computeWidth = function() {
 			if (columnWidth instanceof Length) {
 				intrinsicMinimumWidth = Length;
 				intrinsicPreferredWidth = Length;
-			} else if (columnWidth === Width.equal) {
+			}
+
+			// A column with a `columnWidth` of '*' has an infinite intrinsic preferred
+			// width. Its intrinsic minimum width is 0.
+
+			else if (columnWidth === Width.equal) {
 				intrinsicMinimumWidth = 0;
 				intrinsicPreferredWidth = Number.MAX_VALUE;
-			} else if (columnWidth === Width.minContent) {
-				var i, largestIntrinsicMinimumWidth = 0;
+			}
+
+			// A column with a `columnWidth` of 'min-content' has an intrinsic minimum
+			// width and intrinsic preferred width that are both equal to the largest
+			// of the *intrinsic minimum* widths of all the slots in that column.
+
+			else if (columnWidth === Width.minContent) {
 				for (i = 0; i < slots.length; i++) {
 					if (slots[i].getIntrinsicMinimumWidth() > largestIntrinsicMinimumWidth) {
 						largestIntrinsicMinimumWidth = slots[i].getIntrinsicMinimumWidth();
 					}
 				}
 				intrinsicMinimumWidth = intrinsicPreferredWidth = largestIntrinsicMinimumWidth;
-			} else if (columnWidth === Width.maxContent) {
+			}
 
+			// A column with a `columnWidth` of 'max-content' has an intrinsic minimum
+			// width and intrinsic preferred width that are both equal to the largest
+			// of the *intrinsic preferred* widths of all the slots in that column.
+
+			else if (columnWidth === Width.maxContent) {
+				for (i = 0; i < slots.length; i++) {
+					if (slots[i].getIntrinsicPreferredWidth() > largestIntrinsicPreferredWidth) {
+						largestIntrinsicPreferredWidth = slots[i].getIntrinsicPreferredWidth();
+					}
+				}
+				intrinsicMinimumWidth = intrinsicPreferredWidth = largestIntrinsicPreferredWidth;
+			}
+
+			// A column with a `columnWidth` of 'minmax(p, q)' has an intrinsic
+			// minimum width equal to p and an intrinsic preferred width equal to q.
+
+			else if (columnWidth instanceof MinMax) {
+				intrinsicMinimumWidth = columnWidth.p;
+				intrinsicPreferredWidth = columnWidth.q;
+			}
+
+			else {
+				assert(false, 'A non recognised value for column width: ' + columnWidth);
 			}
 		};
 
