@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>ALMCSS3 - Width Algorithm</title>
+    <title>ALMCSS3 - Width Algorithm (Template Layout)</title>
     <meta charset=utf-8 />
     <style>
         body {
@@ -20,25 +20,20 @@
 		#three	{ color: rgb(42, 46, 29); }
 
 		#container {
-			display: table;
-			width: 100%;
-			table-layout: fixed;
+            display: "abc"
+                    600px fit-content 800px;
 		}
 
-		#container div {
-			display: table-cell;
-		}
-
-		/*
-		#one    { width: 600px; }
-        #two    { width: fit-content; }
-		#three	{ width: 800px; }
-		*/
+        #one    { position: a; }
+        #two    { position: b; }
+        #three  { position: c; }
 
     </style>
+    <script type="text/javascript" src="../js/almcss3/almcss.js"></script>
+    <link rel="stylesheet" type="text/css" href="css/almcss-debug.css"></link>
 </head>
 <body>
-    <h1>Width Algorithm (tables)</h1>
+    <h1>Width Algorithm (Template Layout)</h1>
 	<div id="container">
 		<div id="one">
 			<p>A short list:</p>

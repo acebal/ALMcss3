@@ -838,7 +838,7 @@ ALMCSS.parser = function() {
 				case "max-content": return Token.MAX_CONTENT;
 				case "min-content": return Token.MIN_CONTENT;
 				case "minmax": return Token.MINMAX;
-				case "fitcontent": return Token.FIT_CONTENT;
+				case "fit-content": return Token.FIT_CONTENT;
 				case "same": return Token.SAME;
 			}
 			log('An identifier was found: ' + ident);
@@ -1225,6 +1225,9 @@ ALMCSS.parser = function() {
 
 		var nextToken = function() {
 			currentToken = lexer.nextToken();
+			while (currentToken.isComment()) {
+				currentToken = lexer.nextToken();
+			}
 		};
 
 		var match = function(expectedToken, message) {
@@ -1699,10 +1702,20 @@ ALMCSS.parser = function() {
 			}
 		};
 
+
+
+		var omitRule = function() {
+			nextToken();
+			while (currentToken !== Token.EOF && currentToken !== Token.RBRACE) {
+				nextToken();
+			}
+		};
+
+
 		var parseRule = function() {
 			var selectorText, rule;
 			log('Parsing a rule...');
-			try {
+			//try {
 				selectorText = parseSelectorGroup();
 				match(TokenType.LBRACE, 'while parsing a rule');
 				rule = new Rule(selectorText);
@@ -1714,15 +1727,23 @@ ALMCSS.parser = function() {
 				parseWhitespace();
 				log('A rule was matched: ' + rule);
 				return rule;
-			} catch (e) {
-				error('An invalid selector was found: the rule is omitted: ' + selectorText);
-			}
+			//} catch (e) {
+			//	error('An invalid selector was found: the rule is omitted: ' + selectorText);
+			//	omitRule();
+			//}
 		};
 
 		var parseStyleSheet = function() {
 			var ruleSet = [];
 			while (currentToken !== Token.EOF) {
-				ruleSet.push(parseRule());
+				try {
+					parseWhitespace();
+					ruleSet.push(parseRule());
+				} catch (e) {
+					error('An invalid selector was found: the rule is omitted (current token = %s)',
+						currentToken.toString());
+					omitRule();
+				}
 			}
 			return ruleSet;
 		};

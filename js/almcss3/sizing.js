@@ -8,7 +8,8 @@ ALMCSS.sizing = function () {
 		LoggerLevel = ALMCSS.debug.LoggerLevel,
 		logger = ALMCSS.debug.getLogger('Sizing Algorithms', LoggerLevel.all),
 		log = logger.log,
-		info = logger.info;
+		info = logger.info,
+		getComputedWidth = ALMCSS.util.getComputedWidth;
 
 	// Width Algorithm
 	// ---------------
@@ -53,11 +54,14 @@ ALMCSS.sizing = function () {
 		// TODO: Resolve this questions with Bert.
 		//
 
-		var wideColumns = function (availableWidth, columns) {
+		var wideColumns = function (elementWidth, columns) {
 
-			var i, numberOfColumns, columnWidth, areAllWidened = false,
-				intrinsicPreferredWidth, nonExpandableColumns = [],
-				computedWiths = [];
+			var i, step, numberOfColumns, columnWidth, areAllWidened = false,
+				intrinsicPreferredWidth, nonExpandableColumns, computedWidths,
+				availableWidth, fixedWidth, message;
+
+			nonExpandableColumns = [];
+			computedWidths = [];
 
 			var isExpandableColumn = function (column) {
 				for (var i = 0; i < nonExpandableColumns.length; i++) {
@@ -68,41 +72,84 @@ ALMCSS.sizing = function () {
 				return true;
 			};
 
-			numberOfColumns = columns.length;
-			columnWidth = availableWidth / numberOfColumns;
-			logger.group('Widening columns to ' + columnWidth + ' pixels...');
+			var isThereAvailableWidth = function() {
+				return availableWidth > 1;
+			};
 
-			i = 0;
-			while (availableWidth > 0 && !areAllWidened) {
-				if (isExpandableColumn(columns[i])) {
+			numberOfColumns = columns.length;
+			step = 1;
+			availableWidth = elementWidth;
+			fixedWidth = 0;
+
+			while (isThereAvailableWidth() && !areAllWidened) {
+
+				assert(step < 30, 'Ups, something had to went wrong: too many steps');
+				availableWidth = elementWidth - fixedWidth;
+				fixedWidth = 0;
+				columnWidth = availableWidth / numberOfColumns;
+				logger.group('Step %d: Widening columns to %d pixels...', step, columnWidth);
+
+				// All columns are processed in each iteration.
+				for (i = 0; i < columns.length; i++) {
+
+					// If the column is not expandable (it has already reached its
+					// intrinsic preferred width), there is nothing to do with it:
+					// the widening process continues with the following one, if
+					// there are left columns to be iterated in this step.
+					if (!isExpandableColumn(columns[i])) {
+						continue;
+					}
+
+					// Otherwise (the column may be widened), its intrinsic
+					// preferred width is obtained
 					intrinsicPreferredWidth = columns[i].getIntrinsicPreferredWidth();
+
+					// __No column can be wider than its preferred minimum width__.
+					// If the column that is being currently processed can not
+					// expand to `columnWidth` without violating that constraint,
+					// then it is set to its _preferred minimum width_. Note that
+					// the difference between both values would have to be redistributed
+					// in subsequent iterations among the rest of the columns that
+					// may still be widen.
+
 					if (columnWidth > intrinsicPreferredWidth) {
-						computedWiths[i] = intrinsicPreferredWidth;
-						availableWidth = availableWidth - intrinsicPreferredWidth;
+						computedWidths[i] = intrinsicPreferredWidth;
+						fixedWidth = fixedWidth + computedWidths[i];
 						nonExpandableColumns.push(columns[i]);
 						info('Column ' + i + ' has been set to its intrinsic preferred width ' +
 							'and is not more expandable');
-					} else {
-						computedWiths[i] = columnWidth;
-						availableWidth = availableWidth - columnWidth;
+					}
+
+					// If the column width to be assigned in this step is less than
+					// or equal to the intrinsic preferred width of the column that
+					// is being processed, it simply sets its width to the previously
+					// calculated `columnWidth` (remind: the result of dividing the
+					// available width into all the columns).
+					else {
+						computedWidths[i] = columnWidth;
 						log('Column ' + i + ' has been set a width of ' + columnWidth + ' pixels');
 					}
+
+					availableWidth = availableWidth - computedWidths[i];
 				}
-				i = i + 1;
-				if (i === columns.length) {
-					logger.groupEnd();
+				if (!isThereAvailableWidth()) {
+					log('There is no more available width');
+				} else {
+					log('After step %d, there are still %d pixels of available width', step, availableWidth);
 					if (nonExpandableColumns.length === columns.length) {
 						areAllWidened = true;
+						log('But all columns have already be widened up to their maximum: we have to end');
 					} else {
-						i = 0;
 						numberOfColumns = columns.length - nonExpandableColumns.length;
-						columnWidth = availableWidth / numberOfColumns;
-						logger.group('Widening columns to ' + columnWidth + ' pixels...');
+						message = numberOfColumns === 1 ? 'is' : 'are';
+						log('There %s still %d columns that can be widened', message, numberOfColumns);
 					}
 				}
+				step = step + 1;
+				logger.groupEnd();
 			}
-			info('All columns have been widened: ' + computedWiths);
-			return computedWiths;
+			info('All columns have been widened: ' + computedWidths);
+			return computedWidths;
 		};
 
 		var computeTemplateWidth = function (template) {
@@ -118,28 +165,26 @@ ALMCSS.sizing = function () {
 			columns = template.getColumns();
 			element = template.htmlElement;
 
-			// TODO: Review other occurrences in the code
-			elementWidth = getComputedStyle(element, null).getPropertyValue('width');
-			elementWidth = parseInt(elementWidth.match(/\d+/), 10);
+			elementWidth = getComputedWidth(element);
 			sumOfIntrinsicMinimumWidths = sumIntrinsicMinimumWidths(columns);
 
 			if (sumOfIntrinsicMinimumWidths > elementWidth) {
 				log('The sum of the intrinsic minimum widths (' + sumOfIntrinsicMinimumWidths + ') ' +
 					'is larger than the element width (' + elementWidth + '): ' +
 					'setting columns to their intrinsic minimum width...');
-				for (var i = 0; i < columns.length; i++) {
+				for (i = 0; i < columns.length; i++) {
 					computedWidths[i] = columns[i].getIntrinsicMinimumWidth();
 				}
 			} else {
 				log('The sum of the intrinsic minimum widths (' + sumOfIntrinsicMinimumWidths + ') ' +
 					'is less than or equal to the element width (' + elementWidth + '): ' +
 					'columns have to be widened');
-				amount = elementWidth - sumOfIntrinsicMinimumWidths;
-				computedWidths = wideColumns(amount, columns);
+				computedWidths = wideColumns(elementWidth, columns);
 				for (i = 0; i < computedWidths.length; i++) {
 					columns[i].setComputedWidth(computedWidths[i]);
 				}
 			}
+			info('All widths have been computed: ' + computedWidths);
 			logger.groupEnd();
 			// TODO: What to do with computedWidths?
 			// TODO: Is there an easy way to test this automatically?

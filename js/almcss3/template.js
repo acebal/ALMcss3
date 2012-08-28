@@ -303,9 +303,13 @@ ALMCSS.template = function() {
 	};
 
 	var MinMax = function(p, q) {
-		Width.call(this, 'min-max');
+		Width.call(this, 'minmax');
 		this.p = p;
 		this.q = q;
+	};
+
+	MinMax.prototype.toString = function() {
+		return 'minmax(' + this.p + ', ' + this.q + ')';
 	};
 
 	// Auxiliary functions
@@ -431,12 +435,31 @@ ALMCSS.template = function() {
 				intrinsicPreferredWidth = columnWidth.q;
 			}
 
+			else if (columnWidth === Width.fitContent) {
+				for (i = 0; i < slots.length; i++) {
+					if (slots[i].getIntrinsicMinimumWidth() > largestIntrinsicMinimumWidth) {
+						largestIntrinsicMinimumWidth = slots[i].getIntrinsicMinimumWidth();
+					}
+				}
+				for (i = 0; i < slots.length; i++) {
+					if (slots[i].getIntrinsicPreferredWidth() > largestIntrinsicPreferredWidth) {
+						largestIntrinsicPreferredWidth = slots[i].getIntrinsicPreferredWidth();
+					}
+				}
+				intrinsicMinimumWidth = largestIntrinsicMinimumWidth;
+				intrinsicPreferredWidth = largestIntrinsicPreferredWidth;
+			}
+
 			else {
 				assert(false, 'A non recognised value for column width: ' + columnWidth);
 			}
 
             info('Intrinsic minimum width = ' + intrinsicMinimumWidth);
-            info('Intrinsic preferred width = ' + intrinsicPreferredWidth);
+			if (intrinsicPreferredWidth === Number.MAX_VALUE) {
+				info('Intrinsic preferred width = infinite');
+			} else {
+                info('Intrinsic preferred width = ' + intrinsicPreferredWidth);
+			}
 		};
 
         return {
