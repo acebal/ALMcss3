@@ -1,6 +1,6 @@
 var ALMCSS = ALMCSS || {};
 
-ALMCSS.template.sizing = function() {
+ALMCSS.sizing = function() {
 
     'use strict';
 
@@ -8,9 +8,7 @@ ALMCSS.template.sizing = function() {
         LoggerLevel = ALMCSS.debug.LoggerLevel,
         logger = ALMCSS.debug.getLogger('Sizing Algorithms', LoggerLevel.all),
         log = logger.log,
-        info = logger.info,
-	    lengthToPixels = ALMCSS.length.lengthToPixels;
-
+        info = logger.info;
 
     // Width Algorithm
     // ---------------
@@ -55,7 +53,7 @@ ALMCSS.template.sizing = function() {
         // TODO: Resolve this questions with Bert.
         //
 
-        var wideColumns = function(columns, availableWidth) {
+        var wideColumns = function(availableWidth, columns) {
 
 			var i, numberOfColumns, columnWidth, areAllWidened = false,
 				intrinsicPreferredWidth, nonExpandableColumns = [],
@@ -87,10 +85,10 @@ ALMCSS.template.sizing = function() {
 					} else {
 						computedWiths[i] = columnWidth;
 						availableWidth = availableWidth - columnWidth;
-						log('Column ' + i + 'has been set a width of ' + columnWidth + ' pixels');
+						log('Column ' + i + ' has been set a width of ' + columnWidth + ' pixels');
 					}
 		        }
-		        if (i === columns.length() < 1) {
+		        if (i === columns.length - 1) {
 			        logger.groupEnd();
 			        if (nonExpandableColumns.length === columns.length) {
 				        areAllWidened = true;
@@ -114,12 +112,15 @@ ALMCSS.template.sizing = function() {
             var columns, element, elementWidth, sumOfIntrinsicMinimumWidths, amount,
 	            computedWidths = [];
 
-            assert(template.columns, 'Columns must have been created before computing the width');
+            assert(template.getColumns(), 'Columns must have been created before computing the width');
 
-            columns = template.columns;
+            columns = template.getColumns();
 	        element = template.htmlElement;
+
+	        // TODO: Review other occurrences in the code
             elementWidth = getComputedStyle(element, null).getPropertyValue('width');
-            sumOfIntrinsicMinimumWidths = sumIntrinsicMinimumWidths(columns);
+	        elementWidth = parseInt(elementWidth.match(/\d+/), 10);
+	        sumOfIntrinsicMinimumWidths = sumIntrinsicMinimumWidths(columns);
 
             if (sumOfIntrinsicMinimumWidths > elementWidth) {
                 log('The sum of the intrinsic minimum widths (' + sumOfIntrinsicMinimumWidths + ') ' +
@@ -134,18 +135,32 @@ ALMCSS.template.sizing = function() {
                     'columns have to be widened');
                 amount = elementWidth - sumOfIntrinsicMinimumWidths;
                 computedWidths = wideColumns(amount, columns);
+	            for (i = 0; i < computedWidths.length; i++) {
+		            columns[i].setComputedWidth(computedWidths[i]);
+	            }
             }
             logger.groupEnd();
 	        // TODO: What to do with computedWidths?
 	        // TODO: Is there an easy way to test this automatically?
         };
 
+	    var computeWidths = function(templates) {
+			for (var i = 0; i < templates.length; i++) {
+				//computeTemplateWidth(templates[i]);
+				templates[i].computeWidths();
+			}
+	    };
+
         return {
-            computeTemplateWidth: computeTemplateWidth
+            computeTemplateWidth: computeTemplateWidth,
+	        computeWidths: computeWidths
         };
 
     }();
 
-
+	return {
+		computeWidths: WidthAlgorithm.computeWidths,
+		computeTemplateWidth: WidthAlgorithm.computeTemplateWidth
+	}
 
 }();

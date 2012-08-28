@@ -498,11 +498,12 @@ ALMCSS.template = function() {
                     result.push(slots.get(slotName));
                 }
             }
+	        return result;
         };
 
         var createColumns = function(htmlElement) {
             var i, slots, column;
-            for (i = 0; i < columnWidths; i++) {
+            for (i = 0; i < columnWidths.length; i++) {
                 slots = getSlotsOfColumn(i);
                 column = new Column(i, columnWidths[i], slots, htmlElement);
                 columns.push(column);
@@ -516,6 +517,9 @@ ALMCSS.template = function() {
 			},
 			hasSlot: function(slotName) {
 				return slots.contains(slotName);
+			},
+			getColumns: function() {
+				return columns;
 			},
 			getSlot: function(slotName) {
 				return slots.get(slotName);
