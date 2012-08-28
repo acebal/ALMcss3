@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>ALMCSS3 - Width Algorithm</title>
+    <meta charset=utf-8 />
+    <style>
+        body {
+            font-family: Helvetica, Arial, sans-serif;
+            font-size: 1.1em;
+            line-height: 1.4;
+            color: #404040;
+        }
+
+		#one 	{ background: rgb(249, 151, 1); }
+		#two	{ background: rgb(219, 112, 124); }
+		#three 	{ background: rgb(242, 255, 68)}
+
+		#one	{ color: black; }
+		#two	{ color: white; }
+		#three	{ color: rgb(42, 46, 29); }
+
+		#container {
+			display: table;
+			width: 100%;
+			table-layout: fixed;
+		}
+
+		#container div {
+			display: table-cell;
+		}
+
+		/*
+		#one    { width: 600px; }
+        #two    { width: fit-content; }
+		#three	{ width: 800px; }
+		*/
+
+    </style>
+</head>
+<body>
+    <h1>Width Algorithm (tables)</h1>
+	<div id="container">
+		<div id="one">
+			<p>A short list:</p>
+			<ul>
+				<li>One</li>
+				<li>Two</li>
+				<li>More elements&hellip;</li>
+			</ul>
+		</div>
+		<div id="two">
+			<img src="img/niza.jpg" alt="Niza"/>
+		</div>
+		<div id="three">
+			<p>This is a supercalifragilisticexpialidocious paragraph that contains a ver long word.</p>
+		</div>
+		<!--
+		<div id="four">
+			<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Mauris vel tortor non lectus aliquet consequat. Duis tincidunt blandit auctor. Proin vehicula pulvinar erat non molestie. In a ultrices odio. Integer et semper nisl. Nam tincidunt aliquam lorem, ut posuere elit sollicitudin ac. Quisque nec rhoncus nisl. Aliquam quis nisi vel risus tempus congue sed quis metus. Proin tortor felis, sodales eget dignissim id, euismod a nibh. Nam ac mauris urna, rutrum gravida enim.</p>
+		</div>
+	    -->
+	</div>
+</body>
+</html>

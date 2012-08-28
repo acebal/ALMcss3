@@ -248,6 +248,10 @@ ALMCSS.template = function() {
 		this.unit = unit ? unit : '';
 	};
 
+	Length.prototype.isLength = function() {
+		return true;
+	};
+
 	Length.prototype.valueOf = function() {
 		return this.value + this.unit;
 	};
@@ -285,6 +289,10 @@ ALMCSS.template = function() {
 	Width.maxContent = new Width('max-content');
 	Width.minContent = new Width('min-content');
 	Width.fitContent = new Width('fit-content');
+
+	Width.prototype.isLength = function() {
+		return false;
+	};
 
 	Width.prototype.valueOf = function() {
 		return this.value;
@@ -445,6 +453,7 @@ ALMCSS.template = function() {
                 return this.computedWidth;
             },
             setComputedWidth: function(width) {
+                log('Setting column ' + index + ' width to ' + width + ' px');
                 this.computedWidth = width;
             },
             getIntrinsicMinimumWidth: function() {
@@ -476,6 +485,8 @@ ALMCSS.template = function() {
 
 	var Template = function(templateId, rows, columnWidths, slots, selectorText, cssText) {
 
+        var sizing = ALMCSS.sizing;
+
         // An array of `Column` objects
         var columns = [];
 
@@ -496,14 +507,6 @@ ALMCSS.template = function() {
                 column = new Column(i, columnWidths[i], slots, htmlElement);
                 columns.push(column);
             }
-        };
-
-        var sumOfIntrinsicMinimumWidths = function() {
-            var i, result = 0;
-            for (i = 0; i < columns.length; i++) {
-                result = result + columns[i].getIntrinsicMinimumWidth();
-            }
-            return result;
         };
 
 		return {
@@ -553,11 +556,7 @@ ALMCSS.template = function() {
                 createColumns(this.htmlElement);
                 log('OK, they have been created:\n' + columns);
                 log('Now, computing the widths...');
-                log('(Currently, all templates are computed as is they had an a-priori width)');
-
-                // TODO
-                // if (sumOfIntrinsicMinimumWidths() > htmlElement [...]
-
+                sizing.computeTemplateWidth(this);
             }
 		};
 
