@@ -136,6 +136,8 @@ ALMCSS.template.sizing = function() {
                 computedWidths = wideColumns(amount, columns);
             }
             logger.groupEnd();
+	        // TODO: What to do with computedWidths?
+	        // TODO: Is there an easy way to test this automatically?
         };
 
         return {
