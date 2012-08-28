@@ -4,9 +4,7 @@ ALMCSS.width = function() {
 
 	'use strict';
 
-	var getWidth = function(element) {
-		return getComputedStyle(element).getPropertyValue('width');
-	};
+	var getWidth = ALMCSS.util.getComputedWidth;
 
 	var computeIntrinsicPreferredWidth = function(element) {
 		var priorWidth = getWidth(element),
@@ -54,7 +52,6 @@ ALMCSS.width = function() {
 	};
 
 	return {
-		getWidth: getWidth,
 		computeIntrinsicPreferredWidth: computeIntrinsicPreferredWidth,
 		computeIntrinsicMinimumWidth: computeIntrinsicMinimumWidth
 	};

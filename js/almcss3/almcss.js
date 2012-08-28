@@ -124,11 +124,13 @@ var ALMCSS = function() {
 			'stylesheet.js',
 			'css.js',
 			'parser.js',
+
+			'util.js',
 			'width.js',
 			'length.js',
 			'sizing.js',
 			'template.js',
-			'dom.js',
+			'dom.js'
 		], init);
 	};
 

@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Minimum and preferred intrinsic widths (tests)</title>
+    <meta charset=utf-8 />
+	<style type="text/css" media="screen">
+	
+		body {
+			font-family: Helvetica;
+			line-height: 1.4;
+			font-size: 1.3;
+			color: #404040;
+		}
+	
+		p {
+			background: gold;
+			padding: 0.5em;
+		}
+		
+		p#minimum-width {
+			background: lightgreen;
+			max-width:  intrinsic;         /* Safari/WebKit */
+			max-width:  -moz-max-content;  /* Firefox/Gecko */
+		}
+		
+		p#preferred-width {
+			background: lightblue;
+			max-width: -moz-min-content; 
+		}
+	</style>
+</head>
+<body>
+	<h1>Minimum and preferred intrinsic widths (tests)</h1>
+	
+	<p>This is a supercalifragilisticexpialidocious paragraph that contains a ver long word.</p>
+	
+	<p id="minimum-width">This is a supercalifragilisticexpialidocious paragraph that contains a ver long word.</p>
+	
+	<p is="preferred-width">This is a supercalifragilisticexpialidocious paragraph that contains a ver long word.</p>
+	
+</body>
+</html>

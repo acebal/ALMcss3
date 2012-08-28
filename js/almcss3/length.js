@@ -4,13 +4,15 @@ ALMCSS.length = function() {
 
     'use strict';
 
-    var lengthToPixels = function(length, containerElement) {
+	var getComputedWidth = ALMCSS.util.getComputedWidth;
+
+	var lengthToPixels = function(length, containerElement) {
         var result, element;
         element = document.createElement('div');
         element.style.visibility = 'hidden';
         element.style.width = length.toString();
         containerElement.appendChild(element);
-        result = getComputedStyle(element, null).getPropertyValue('width');
+        result = getComputedWidth(element);
         containerElement.removeChild(element);
         return result;
     };

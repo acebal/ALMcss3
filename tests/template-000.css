@@ -1,7 +1,6 @@
 body {
-    display: "a"
-             "b"
-             "c";
+    display: "abc"
+              @ @ 185px;
 }
 
 #header     { position: c; }

@@ -369,8 +369,8 @@ ALMCSS.template = function() {
 
 	var Column = function(index, columnWidth, slots, htmlElement) {
 
-		var intrinsicMinimumWidth = undefined,
-			intrinsicPreferredWidth = undefined;
+		var intrinsicMinimumWidth,
+			intrinsicPreferredWidth;
 
 		var computeIntrinsicMinimumAndIntrinsicPreferredWidths = function() {
 
@@ -385,8 +385,8 @@ ALMCSS.template = function() {
 			// intrinsic preferred widths both equal to that length.
 
 			if (columnWidth instanceof Length) {
-				intrinsicMinimumWidth = lengthToPixels(columnWidth);
-				intrinsicPreferredWidth = lengthToPixels(columnWidth);
+				intrinsicMinimumWidth = lengthToPixels(columnWidth, htmlElement);
+				intrinsicPreferredWidth = lengthToPixels(columnWidth, htmlElement);
 			}
 
 			// A column with a `columnWidth` of '*' has an infinite intrinsic preferred
