@@ -12,9 +12,6 @@ ALMCSS.template = function() {
 		warn = logger.warn,
 		error = logger.error;
 
-	var TEMPLATE_ID     = 'almcss_tpl',
-		SLOT_ID         = 'slot_';
-
 	var templates = [],
 		positionedElements = [];
 
@@ -101,7 +98,7 @@ ALMCSS.template = function() {
 
 	Slot.prototype.getIntrinsicMinimumWidth = function() {
 
-		var minimumWidth = ALMCSS.width.computeIntrinsicMinimumWidth;
+		var minimumWidth = ALMCSS.domUtils.computeIntrinsicMinimumWidth;
 
 		assert(this.htmlElement, 'For computing the intrinsic minimum width of a slot ' +
 			'first it is needed to have done the process of moving the elements into it');
@@ -125,7 +122,7 @@ ALMCSS.template = function() {
 
 	Slot.prototype.getIntrinsicPreferredWidth = function() {
 
-		var preferredWidth = ALMCSS.width.computeIntrinsicPreferredWidth;
+		var preferredWidth = ALMCSS.domUtils.computeIntrinsicPreferredWidth;
 
 		assert(this.htmlElement, 'For computing the intrinsic minimum width of a slot ' +
 			'first it is needed to have done the process of moving the elements into it');
@@ -143,6 +140,16 @@ ALMCSS.template = function() {
 		// preferred width as defined by the CSS3 Box Module
 		this.intrinsicPreferredWidth = preferredWidth(this.htmlElement);
 		return this.intrinsicPreferredWidth;
+	};
+
+	Slot.prototype.getContentHeight = function(width) {
+
+		var contentHeight = ALMCSS.domUtils.computeContentHeight;
+
+		assert(this.htmlElement, 'For computing the height of a slot first it ' +
+			'is needed to have done the process of moving the elements into it');
+
+		return contentHeight(this.htmlElement, width);
 	};
 
 	Slot.prototype.valueOf = function() {
@@ -365,6 +372,7 @@ ALMCSS.template = function() {
 	var Row = function(columns, height) {
 		this.columns = removeSpaces(columns);
 		this.height = height || Height.auto;
+		this.computedHeight = 0;
 	};
 
 	Row.prototype.toString = function() {
@@ -381,7 +389,7 @@ ALMCSS.template = function() {
             info('Computing the intrinsic minimum and preferred widths from column: ' + index +
                 ' (' + columnWidth + ')');
 
-            var lengthToPixels = ALMCSS.length.lengthToPixels;
+            var lengthToPixels = ALMCSS.domUtils.lengthToPixels;
 
 			var i, largestIntrinsicMinimumWidth = 0, largestIntrinsicPreferredWidth = 0;
 
@@ -506,9 +514,38 @@ ALMCSS.template = function() {
 	// Template
 	// --------
 
+
+	// A `Template` object represents a template in the CSS object model.
+	// Apart from other parameters like a `templateId` created by the factory
+	// method `createTemplate` to identify the template (useful for logging),
+	// it receives a template definition as it was recognised by the parser.
+	// This template definition is represented by the parameters `rows` and
+	// `columnWidths`. The first one is an array of `Row` objects that have
+	// other two properties: `columns` and `rowHeight`, where `columns` is a
+	// string representing that row in in the template, as it appears in the
+	// style sheet, and `rowHeight` is the value expressed in the style sheet
+	// for that row (it must be either a valid CSS length value, the character
+	// symbol that represents equal-height columns (currently, an 'at' symbol
+	// ('@') instead of the asterisk ('*') proposed in the specification), or
+	// the `auto` keyword. Note that the `Row` object automatically sets this
+	// property to `Height.auto` if no column height was specified in the
+	// style sheet, so it is guaranteed that it always has an explicit height.
+	//
+	// In addition, this constructor already receives a `columnWidths` parameter,
+	// which is an array of `Width` objects that represent the values of the
+	// column widths specified in the template declaration in the style sheet.
+	//
+	//     templateDefinition {
+	//         rows: an array of `Row` objects
+	//                  { columns: a string representing a row
+	//                    rowHeight [optional]: the height of this row (a `Height`)
+	//                  }
+	//         columnWidths: an array of `Width` objects with the column widths
+	//
+
 	var Template = function(templateId, rows, columnWidths, slots, selectorText, cssText) {
 
-        var sizing = ALMCSS.sizing;
+        var sizing = ALMCSS.template.sizing;
 
         // An array of `Column` objects
         var columns = [];
@@ -521,7 +558,7 @@ ALMCSS.template = function() {
                     result.push(slots.get(slotName));
                 }
             }
-	        return result;
+			return result;
         };
 
         var createColumns = function(htmlElement) {
@@ -547,6 +584,20 @@ ALMCSS.template = function() {
 			getSlot: function(slotName) {
 				return slots.get(slotName);
 			},
+			getSlotsOfRow: function(rowIndex) {
+				var i, row, slotName, result = [];
+				row = rows[rowIndex];
+				for (i = 0; i < row.columns.length; i++) {
+					slotName = row.columns.charAt(i);
+					if (!containsSlot(result, slotName)) {
+						result.push(slots.get(slotName));
+					}
+				}
+				return result;
+			},
+			getColumnWidth: function(columnIndex) {
+				return columnWidths[columnIndex];
+			},
 			iterator: function() {
 				return slots.iterator();
 			},
@@ -558,6 +609,9 @@ ALMCSS.template = function() {
 			},
 			howManySlots: function() {
 				return slots.size();
+			},
+			getRows: function() {
+				return rows;
 			},
 			getSelectorText: function() {
 				return selectorText;
@@ -590,33 +644,10 @@ ALMCSS.template = function() {
 	}; // Template
 
 
-	// A `Template` object represents a template in the CSS object model. It
-	// receives a template definition as it was recognised by the parser. This
-	// template definition is an object that consists of a `rows` and a
-	// `columnWidths` properties. The first one is an array of objects that
-	// have two other properties: `row` and `rowHeight` (this is optional),
-	// where `row` is a string representing that row in in the template, as it
-	// appears in the style sheet, and `rowHeight`, if it exists, is the value
-	// expressed in the style sheet for that row (it must be either a valid
-	// CSS length value, the character symbol that represents equal-height
-	// columns (currently, an 'at' symbol ('@') instead of the asterisk ('*')
-	// proposed in the specification), or the `auto` keyword. The second
-	// property of the `templateDefinition` object received as a parameter,
-	// `columnWidths` is an array with the values of the column widths that
-	// appear in the declaration in the style sheet.
-	//
-	//     templateDefinition {
-	//         rows: an array of
-	//                  { row: a string representing a row
-	//                    rowHeight [optional]: the height of this row
-	//                  }
-	//         columnWidths: an array with the column widths
-	//
-	// var TemplateCompiler = function(templateDefinition) {
 
 
-	// createTemplate
-	// --------------
+	// Factory Method for Creating Templates
+	// -------------------------------------
 
 	var createTemplate = function(rows, columnWidths, selectorText, cssText) {
 
@@ -624,7 +655,7 @@ ALMCSS.template = function() {
 			numberOfRows = rows.length,
 			numberOfColumns = 0,
 			slots = new Slots(),
-			templateId = TEMPLATE_ID + templates.length + 1,
+			templateId = ALMCSS.Config.TEMPLATE_ID + templates.length + 1,
 			slotId;
 
 		var computerNumberOfColumns = function() {
@@ -704,7 +735,7 @@ ALMCSS.template = function() {
 						lastSlot = slots.get(slotName);
 					}
 					if (!slots.contains(slotName)) {
-						slotId = templateId + '_' + SLOT_ID + slotName;
+						slotId = templateId + '_' + ALMCSS.Config.SLOT_ID + slotName;
 						slot = new Slot(slotId, slotName, row, column);
 						slots.add(slot);
 					} else {
@@ -726,7 +757,11 @@ ALMCSS.template = function() {
 		templates.push(template);
 		return template;
 
-	}; // createTemplate
+	};
+
+
+	// Adding Positioned Elements
+	// --------------------------
 
 	var addPositionedElement = function(selectorText, slotName) {
 		positionedElements.push(new Position(selectorText, slotName));

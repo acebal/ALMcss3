@@ -14,18 +14,18 @@
 
 var ALMCSS = ALMCSS || {};
 
-//ALMCSS.module.include(['lib/firebug-lite.js']);
+/* ALMCSS.module.include(['lib/firebug-lite.js']); */
 
 ALMCSS.debug = function () {
 
 	'use strict';
 
-	var debug = true,
+	var debug = ALMCSS.Config.DEBUG,
 		loggers = {},
 		console = window.console;
 
 	/*
-	 var init = function () {
+		var init = function () {
 
 		var console = window.console;
 
@@ -197,10 +197,7 @@ ALMCSS.debug = function () {
 		}
 	};
 
-	/* init(); */
-
 	return {
-		// init: init,
 		LoggerLevel: LoggerLevel,
 		getLogger: getLogger,
 		Assert: Assert,

@@ -1,6 +1,6 @@
 var ALMCSS = ALMCSS || {};
 
-ALMCSS.sizing = function () {
+ALMCSS.template.sizing = function () {
 
 	'use strict';
 
@@ -9,7 +9,8 @@ ALMCSS.sizing = function () {
 		logger = ALMCSS.debug.getLogger('Sizing Algorithms', LoggerLevel.all),
 		log = logger.log,
 		info = logger.info,
-		getComputedWidth = ALMCSS.util.getComputedWidth;
+		getComputedWidth = ALMCSS.domUtils.getComputedWidth,
+		Height = ALMCSS.template.Height;
 
 	// Width Algorithm
 	// ---------------
@@ -187,7 +188,6 @@ ALMCSS.sizing = function () {
 			info('All widths have been computed: ' + computedWidths);
 			logger.groupEnd();
 			// TODO: What to do with computedWidths?
-			// TODO: Is there an easy way to test this automatically?
 		};
 
 		var computeWidths = function (templates) {
@@ -203,6 +203,104 @@ ALMCSS.sizing = function () {
 		};
 
 	}();
+
+	var HeightAlgorithm = function() {
+
+		var computeTemplateHeights = function (template) {
+
+			var rows = template.getRows();
+
+			// Step 1. Computing Single-Row Slots
+			// ----------------------------------
+			// A first step of the algorithm for computing the height consists
+			// on calculating the minimum height of every row, considering only
+			// the slots of that row that do not span (rowspan=1). This step
+			// must be only done for rows for which a height value other than a
+			// explicit length have been set in the template definition. That
+			// is, only rows with a defined height of auto or * (_asterisk_)
+			// must be processed in this first step, since those with an explicit
+			// length already have their height constrained to that value.
+			//
+			// Each row with a defined height of auto or * (_asterisk_) must be
+			// at least as tall as the tallest slot of that row that do not
+			// span (rowspan=1). The height of a slot, for the purpose of this
+			// algorithm, is determined by its contents. Of course, it depends
+			// on the width of the slot, so _computing the heights must
+			// necessarily be done after computing the widths_.
+
+			var computeSingleRowSlots = function() {
+				var i, j, slots, slotHeight, columnWidth;
+
+				// For each row in the template where `row.height` is auto or '*'
+				for (i = 0; i < rows.length; i++) {
+					if (rows[i].height === Height.auto || rows[i].height === Height.equal) {
+						rows[i].computedHeight = 0;
+					}
+					// For each slot in that row for which `slot.colspan` is 1
+					slots = template.getSlotsOfRow(i);
+					for (j = 0; j < slots.length; j++) {
+						if (slots[j].rowspan === 1) {
+							slotHeight = slots[j].getContentHeight(columnWidth);
+							columnWidth = template.getColumnWidth(j);
+							if (slotHeight > rows[i].computedHeight) {
+								rows[i].computedHeight = slotHeight;
+							}
+						}
+					}
+				}
+			};
+
+			// Step 2. Rows of Equal Height
+			// ----------------------------
+			// The Template Layout Module makes very easy to have equal‐height
+			// rows, simply by assigning the selected rows a height of *
+			// (_asterisk_). The first step of the algorithm did not took this
+			// into consideration, and a minimum computed height was assigned
+			// to each row considering only the height of their slots. Now
+			// these rows must be traversed again, assigning to all of them a
+			// height equal to the largest of the minimum heights computed in
+			// the previous stage.
+
+			var computeEqualHeightRows = function() {
+				var i, largestHeight = 0;
+
+				// For each row in the template where `row.height` is '*'
+				for (i = 0; i < rows.length; i++) {
+					if (rows[i].height === Height.equal) {
+						// Get the largest of the minimum heights
+						// that were computed on the previous step
+						if (rows[i].computedHeight > largestHeight) {
+							largestHeight = rows[i].computedHeight;
+						}
+					}
+				}
+				// For each row in the template where `row.height` is '*'
+				for (i = 0; i < rows.length; i++) {
+					if (rows[i].height === Height.equal) {
+						rows[i].computedHeight = largestHeight;
+					}
+				}
+			};
+
+			// Step 3. Computing Multi-Row Slots
+			// ---------------------------------
+
+			var computeMultiRowSlots = function() {
+
+			};
+
+
+
+		};
+
+		var computeHeights = function (templates) {
+			for (var i = 0; i < templates.length; i++) {
+				computeTemplateHeights(templates[i]);
+			}
+		};
+
+	};
+
 
 	return {
 		computeWidths:WidthAlgorithm.computeWidths,

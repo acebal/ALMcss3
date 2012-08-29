@@ -5,18 +5,20 @@ ALMCSS.template.dom = function() {
 	'use strict';
 
 	var assert = ALMCSS.debug.assert,
-		AssertionError = ALMCSS.debug.AssertionError,
 		LoggerLevel = ALMCSS.debug.LoggerLevel,
 		logger = ALMCSS.debug.getLogger('Template DOM creation', LoggerLevel.all),
 		log = logger.log,
 		info = logger.info,
-		warn = logger.warn,
-		error = logger.error;
+		warn = logger.warn;
 
-	var TEMPLATE_CLASS          = 'almcss-template',
-		SLOT_CLASS              = 'almcss-slot',
-		TEMPLATE_LABEL_CLASS    = 'almcss-template-label',
-		SLOT_LABEL_CLASS        = 'almcss-slot-label';
+	var TEMPLATE_CLASS          = ALMCSS.Config.TEMPLATE_CLASS,
+		SLOT_CLASS              = ALMCSS.Config.SLOT_CLASS,
+		TEMPLATE_LABEL_CLASS    = ALMCSS.Config.TEMPLATE_LABEL_CLASS,
+		SLOT_LABEL_CLASS        = ALMCSS.Config.SLOT_LABEL_CLASS,
+		VISUAL_DEBUG            = ALMCSS.Config.VISUAL_DEBUG;
+
+	// Creation of Slots and Templates HTML Elements
+	// ---------------------------------------------
 
 	var createSlotElements = function(template) {
 		var iterator, slot, slotElement, slotLabel;
@@ -27,10 +29,12 @@ ALMCSS.template.dom = function() {
 			slotElement.setAttribute('id', slot.slotId);
 			slotElement.setAttribute('class', SLOT_CLASS);
 			slotElement.style.position = 'relative'; // TODO: Change it to absolute later
-			slotLabel = document.createElement('span');
-			slotLabel.setAttribute('class', SLOT_LABEL_CLASS);
-			slotLabel.innerHTML = slot.slotId;
-			slotElement.appendChild(slotLabel);
+			if (VISUAL_DEBUG) {
+				slotLabel = document.createElement('span');
+				slotLabel.setAttribute('class', SLOT_LABEL_CLASS);
+				slotLabel.innerHTML = slot.slotId;
+				slotElement.appendChild(slotLabel);
+			}
 			template.htmlElement.appendChild(slotElement);
 			slot.htmlElement = slotElement;
 		}
@@ -42,18 +46,22 @@ ALMCSS.template.dom = function() {
 		templateElement.setAttribute('id', template.getId());
 		templateElement.setAttribute('class', TEMPLATE_CLASS);
 		templateElement.style.position = 'relative';
-		templateLabel = document.createElement('span');
-		templateLabel.setAttribute('class', TEMPLATE_LABEL_CLASS);
-		templateLabel.innerHTML = template.getId();
-		templateElement.appendChild(templateLabel);
-		// Currently, it is assumed that templates are defined using a single selector per CSS rule
+		if (VISUAL_DEBUG) {
+			templateLabel = document.createElement('span');
+			templateLabel.setAttribute('class', TEMPLATE_LABEL_CLASS);
+			templateLabel.innerHTML = template.getId();
+			templateElement.appendChild(templateLabel);
+		}
+		// __Currently, it is assumed that templates are defined using a single selector per CSS rule.__
 		var containerElement = document.querySelector(template.getSelectorText());
 		containerElement.appendChild(templateElement);
-		// The HtmlElement object of the DOM **is modified**
+		// The HTMLElement object of the DOM __is modified__.
 		containerElement.isTemplate = true;
+		// The DOM HTMLElement also stores a reference to the template it belongs.
 		containerElement.template = template;
+		// And, of course, the template stores a reference to the HTMLElement created.
 		template.htmlElement = containerElement;
-		// Create the slots
+		// Create the slots.
 		createSlotElements(template);
 	};
 
@@ -63,6 +71,9 @@ ALMCSS.template.dom = function() {
 			createTemplateElement(templates[i]);
 		}
 	};
+
+	// Getting the Ancestor Template
+	// -----------------------------
 
 	var getTemplateAncestor = function(element, slotName) {
 		var template;
@@ -83,6 +94,9 @@ ALMCSS.template.dom = function() {
 		}
 		warn("No template ancestor with a slot '" + slotName + "' was found");
 	};
+
+	// Moving Elements into Slots
+	// --------------------------
 
 	var moveElementsIntoSlots = function(positionedElements) {
 		var i, j, elements, slotName, templateAncestor, slotElement;

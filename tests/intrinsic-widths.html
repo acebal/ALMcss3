@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>ALMCSS3 - Widths</title>
+    <title>Intrinsic Widths</title>
     <meta charset=utf-8 />
     <style>
         body {
@@ -15,15 +15,18 @@
             background: #ddd;
         }
     </style>
-    <script type="text/javascript" src="../js/almcss3/width.js"></script>
+    <script type="text/javascript" src="../js/almcss3/base.js"></script>
+    <script type="text/javascript" src="../js/almcss3/config.js"></script>
+    <script type="text/javascript" src="../js/almcss3/debug.js"></script>
+    <script type="text/javascript" src="../js/almcss3/domUtils.js"></script>
     <script>
         function getWidths(element) {
 
             'use strict';
 
-            var width = ALMCSS.width.getWidth,
-                preferred = ALMCSS.width.computeIntrinsicPreferredWidth,
-                minimum = ALMCSS.width.computeIntrinsicMinimumWidth;
+            var width = ALMCSS.domUtils.getComputedWidth,
+                preferred = ALMCSS.domUtils.computeIntrinsicPreferredWidth,
+                minimum = ALMCSS.domUtils.computeIntrinsicMinimumWidth;
 
             console.group(element.id);
             console.info('Current width: ' + width(element));
@@ -45,7 +48,7 @@
     </script>
 </head>
 <body>
-    <h1>Widths</h1>
+    <h1>Intrinsic Widths</h1>
     <div id="one">
         <p>A short list:</p>
         <ul>

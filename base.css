@@ -1,5 +1,5 @@
-@import "imported1.css";
-@import url("imported2.css");
+@import "tests/old/imported1.css";
+@import url("tests/old/imported2.css");
 
 h1, h2, h3 {
 	font-family: Arial, Helvetica, sans-serif;

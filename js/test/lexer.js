@@ -1,10 +1,10 @@
 module('Lexer');
 
-var lexer = ALMCSS.parser.Lexer;
-var nextToken = lexer.nextToken;
-var Token = ALMCSS.parser.Token;
-var t = ALMCSS.parser.TokenType;
-var readFile = ALMCSS.stylesheet.readFile;
+var Token = ALMCSS.stylesheet.parser.Token,
+	t = ALMCSS.stylesheet.parser.TokenType,
+	lexer = ALMCSS.stylesheet.parser.Lexer,
+	nextToken = lexer.nextToken,
+	readFile = ALMCSS.stylesheet.parser.readFile;
 
 var input, token;
 

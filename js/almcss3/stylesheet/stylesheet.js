@@ -1,3 +1,14 @@
+// Stylesheet
+// ----------
+// This module `ALMCSS.stylesheet` is the responsible for loading all the style
+// information associated to a given HTML document. This includes both internal
+// (that is, included with the <tt>style</tt> element in the header of the
+// document) and external style sheets. Currently, ALMcss does not support
+// neither inline styles (defined with the <tt>style</tt> attribute in concrete
+// elements) nor imported style sheets.
+//
+// File: stylesheet/stylesheet.js
+
 var ALMCSS = ALMCSS || {};
 
 ALMCSS.stylesheet = function() {
@@ -71,7 +82,7 @@ ALMCSS.stylesheet = function() {
 	};
 
 
-	// What does it happen with imported style sheets?
+	// _What does it happen with imported style sheets?_
 
 
 	// Returns the contents of the inline style sheet received as a parameter.

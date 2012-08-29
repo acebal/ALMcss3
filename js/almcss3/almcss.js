@@ -119,14 +119,14 @@ var ALMCSS = function() {
 
 		var LoggerLevel = ALMCSS.debug.LoggerLevel,
 			logger = ALMCSS.debug.getLogger('ALMCSS3 Main Function', LoggerLevel.all),
-			parser = ALMCSS.parser.Parser,
+			parser = ALMCSS.stylesheet.parser.Parser,
 			log = logger.log,
 			info = logger.info,
 			templates = ALMCSS.template.templates,
 			createTemplateElements = ALMCSS.template.dom.createTemplateElements,
 			positionedElements = ALMCSS.template.positionedElements,
 			moveElementsIntoSlots = ALMCSS.template.dom.moveElementsIntoSlots,
-			computeWidths = ALMCSS.sizing.computeWidths,
+			computeWidths = ALMCSS.template.sizing.computeWidths,
 			i;
 
 		info('Starting the main function of ALMCSS3...');
@@ -156,18 +156,22 @@ var ALMCSS = function() {
 		var include = module.include;
 
 		include([
-			'config.js',
-			'debug.js',
-			'stylesheet.js',
-			'css.js',
-			'parser.js',
+			'config.js',                // Global configuration parameters.
+			'debug.js',                 // Assertions and logging.
 
-			'util.js',
-			'width.js',
-			'length.js',
-			'sizing.js',
-			'template.js',
-			'dom.js'
+			'stylesheet/stylesheet.js', // Loads all the style information (<style> element
+										// and external stylesheets).
+			'stylesheet/css.js',        // A simple CSS Object Model (used by the CSS parser).
+			'stylesheet/parser.js',     // A CSS parser that recognised the Template Layout
+										// Module properties and values.
+
+			'domUtils.js',              // Several DOM utility functions for computing
+										// intrinsic minimum and intrinsic preferred widths,
+										// computed widths and heights and that sort of things.
+
+			'template/template.js',
+			'template/sizing.js',
+			'template/dom.js'
 		], init);
 	};
 

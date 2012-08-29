@@ -1,12 +1,14 @@
+// Parser
+// ------
+
 var ALMCSS = ALMCSS || {};
 
-ALMCSS.parser = function() {
+ALMCSS.stylesheet.parser = function() {
 
 	'use strict';
 
 	var assert = ALMCSS.debug.assert,
-		AssertionError = ALMCSS.debug.AssertionError,
-		LoggerLevel = ALMCSS.debug.LoggerLevel;
+		AssertionError = ALMCSS.debug.AssertionError;
 
 	var ASTERISK = '@';
 
@@ -24,7 +26,6 @@ ALMCSS.parser = function() {
     var USI  = IS_IDENT|START_IDENT             |IS_URL_CHAR;
     var UXI  = IS_IDENT            |IS_HEX_DIGIT|IS_URL_CHAR;
     var UXSI = IS_IDENT|START_IDENT|IS_HEX_DIGIT|IS_URL_CHAR;
-
 
     var lexTable = [
         //                                     TAB LF      FF  CR
@@ -95,6 +96,7 @@ ALMCSS.parser = function() {
     };
 
 	// LexicalError
+	// ------------
 
 	var LexicalError = function(message) {
 		this.name = 'LexicalError';
@@ -172,8 +174,8 @@ ALMCSS.parser = function() {
 	TokenType.PERIOD            = new TokenType('PERIOD');          // '.'
 	TokenType.EQUALS            = new TokenType('EQUALS');           // '='
 
-
 	// Token
+	// -----
 
     var Token = function(type, lexeme) {
         this.type = type;
@@ -248,6 +250,7 @@ ALMCSS.parser = function() {
 	Token.EQUALS = new Token(TokenType.EQUALS, '=');
 
 	// IDENT
+	// -----
 
 	var IdentifierToken = function(name) {
 		Token.call(this, TokenType.IDENT, name);
@@ -264,6 +267,7 @@ ALMCSS.parser = function() {
 	};
 
 	// AT-KEYWORD
+	// ----------
 
 	var AtKeywordToken = function(name) {
 		Token.call(this, TokenType.ATKEYWORD, name);
@@ -280,6 +284,7 @@ ALMCSS.parser = function() {
 	};
 
 	// STRING
+	// ------
 
 	var StringToken = function(value) {
 		Token.call(this, TokenType.STRING, value);
@@ -296,6 +301,7 @@ ALMCSS.parser = function() {
 	};
 
 	// HASH
+	// ----
 
 	var HashToken = function(name) {
 		Token.call(this, TokenType.HASH, name);
@@ -312,6 +318,7 @@ ALMCSS.parser = function() {
 	};
 
 	// NUMBER
+	// ------
 
 	var NumberToken = function(value) {
 		Token.call(this, TokenType.NUMBER, value);
@@ -328,6 +335,7 @@ ALMCSS.parser = function() {
 	};
 
 	// PERCENTAGE
+	// ----------
 
 	var PercentageToken = function(value) {
 		Token.call(this, TokenType.PERCENTAGE, value + '%');
@@ -344,9 +352,11 @@ ALMCSS.parser = function() {
 	};
 
 	// DIMENSION
+	// ---------
 
 	// Both `value` and `string` are supposed to be `string` objects, like for
 	// example '13' and 'em', or '120' and 'px'.
+
 	var DimensionToken = function(value, unit) {
 		Token.call(this, TokenType.DIMENSION, value + unit);
 		this.value = value;
@@ -357,6 +367,7 @@ ALMCSS.parser = function() {
 
 	// If a value is present, it is expected to be an string representing a
 	// dimension, that is, the sum of a value and a unit, like '13em' or '120px'.
+
 	DimensionToken.prototype.isDimension = function(value) {
 		if (!value) {
 			return true;
@@ -365,6 +376,7 @@ ALMCSS.parser = function() {
 	};
 
 	// URI
+	// ---
 
 	var UriToken = function(value) {
 		Token.call(this, TokenType.URI, value);
@@ -381,6 +393,7 @@ ALMCSS.parser = function() {
 	};
 
 	// UNICODE-RANGE
+	// -------------
 
     var UnicodeRangeToken = function(value, low, high, valid) {
         Token.call(this, TokenType.UNICODE_RANGE, value);
@@ -400,6 +413,7 @@ ALMCSS.parser = function() {
 	};
 
 	// COMMENT
+	// -------
 
 	var CommentToken = function(comment) {
 		Token.call(this, TokenType.COMMENT, comment);
@@ -412,6 +426,7 @@ ALMCSS.parser = function() {
 	};
 
 	// FUNCTION
+	// --------
 
 	var FunctionToken = function(name) {
 		Token.call(this, TokenType.FUNCTION, name);
@@ -427,7 +442,9 @@ ALMCSS.parser = function() {
 		return this.name === name;
 	};
 
-	// CHAR (called DELIM in CSS 2.1 Spec)
+	// CHAR
+	// ----
+	// (It is called DELIM in CSS 2.1 Spec.)
 
 	var CharToken = function(charSymbol) {
 		Token.call(this, TokenType.CHAR, charSymbol);
@@ -444,8 +461,8 @@ ALMCSS.parser = function() {
 	};
 
 	// MIN-MAX
+	// -------
 
-	// TODO
 	var MinMax = function(p, q) {
 		Token.call(this, TokenType.MINMAX, p + ', ' + q);
 		this.p = p;
@@ -1216,10 +1233,8 @@ ALMCSS.parser = function() {
 			log = logger.log,
 			info = logger.info,
 			error = logger.error,
-			Declaration = ALMCSS.css.Declaration,
-			DeclarationBlock = ALMCSS.css.DeclarationBlock,
-			Rule = ALMCSS.css.Rule,
-			RuleSet = ALMCSS.css.RuleSet,
+			Declaration = ALMCSS.stylesheet.css.Declaration,
+			Rule = ALMCSS.stylesheet.css.Rule,
 			lexer = Lexer,
 			currentToken;
 
@@ -1368,7 +1383,7 @@ ALMCSS.parser = function() {
 		//
 		var parsePseudoSelector = function() {
 			assert(currentToken === Token.COLON, "Why has this been called without a ':'?");
-			log('Parsing a pseudo element or pseudo class selector...')
+			log('Parsing a pseudo element or pseudo class selector...');
 			var selectorText = ':';
 			nextToken();
 			if (currentToken === Token.COLON) {
@@ -1495,6 +1510,9 @@ ALMCSS.parser = function() {
 			}
 			return selectorText;
 		};
+
+		// Parsing a template definition
+		// -----------------------------
 
 		var parseTemplateDefinition = function(selectorText) {
 
@@ -1702,7 +1720,11 @@ ALMCSS.parser = function() {
 			}
 		};
 
-
+		// For a very basic recovering of errors in the analysed style sheet:
+		// it merely keeps reading tokens until either a right bracket ('}')
+		// or an end of file tokens are found. It is supposed to be called
+		// when some error occurs while parsing a selector, and thus the whole
+		// rule must be ignored, according to the CSS Specification.
 
 		var omitRule = function() {
 			nextToken();
@@ -1711,26 +1733,25 @@ ALMCSS.parser = function() {
 			}
 		};
 
-
 		var parseRule = function() {
 			var selectorText, rule;
 			log('Parsing a rule...');
-			//try {
-				selectorText = parseSelectorGroup();
-				match(TokenType.LBRACE, 'while parsing a rule');
-				rule = new Rule(selectorText);
-				nextToken();
-				parseWhitespace();
-				parseDeclarationBlock(rule);
-				match(TokenType.RBRACE, 'while parsing a rule');
-				nextToken();
-				parseWhitespace();
-				log('A rule was matched: ' + rule);
-				return rule;
-			//} catch (e) {
-			//	error('An invalid selector was found: the rule is omitted: ' + selectorText);
-			//	omitRule();
-			//}
+
+			// Note that an __error__ may be thrown while parsing a selector:
+			// it should be catch and processed by the caller of this method.
+			selectorText = parseSelectorGroup();
+
+			match(TokenType.LBRACE, 'while parsing a rule');
+			rule = new Rule(selectorText);
+			nextToken();
+			parseWhitespace();
+			parseDeclarationBlock(rule);
+			match(TokenType.RBRACE, 'while parsing a rule');
+
+			nextToken();
+			parseWhitespace();
+			log('A rule was matched: ' + rule);
+			return rule;
 		};
 
 		var parseStyleSheet = function() {
@@ -1770,10 +1791,10 @@ ALMCSS.parser = function() {
 	}();
 
 	return {
-		Lexer: Lexer,
-		Parser: Parser,
 		Token: Token,
-		TokenType: TokenType
+		TokenType: TokenType,
+		Lexer: Lexer,
+		Parser: Parser
 	};
 
 }();

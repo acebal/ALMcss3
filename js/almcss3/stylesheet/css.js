@@ -1,16 +1,23 @@
+// CSS
+// ---
+// This module `ALMCSS.css` defines a sort of object model (like the CSS
+// Object Model (CSSOM), but much more simplified) for representing the style
+// information associated to an HTML document through some JavaScript objects.
+// The result of the parser is a structure in memory of those type of objects.
+//
+// File: stylesheet/css.js
+
 var ALMCSS = ALMCSS || {};
 
-ALMCSS.css = function() {
+ALMCSS.stylesheet.css = function() {
 
 	'use strict';
 
-	var AlmcssError = ALMCSS.AlmcssError;
-	var assert = ALMCSS.debug.assert;
 	var logger = ALMCSS.debug.getLogger('CSS Object Model');
-	var log = logger.log;
 	var warn = logger.warn;
 
 	// Declaration
+	// -----------
 
 	var Declaration = function(property, value) {
 		this.property = property;
@@ -22,6 +29,7 @@ ALMCSS.css = function() {
 	};
 
 	// DeclarationBlock
+	// ----------------
 
 	var DeclarationBlock = function() {
 		this.declarations = [];
@@ -65,6 +73,7 @@ ALMCSS.css = function() {
 	};
 
 	// Rule
+	// ----
 
 	var Rule = function(selectorText) {
 		this.selectorText = selectorText;
@@ -103,10 +112,6 @@ ALMCSS.css = function() {
 				return this.rules[i];
 			}
 		}
-	};
-
-	RuleSet.prototype.getNumberOfRules = function() {
-
 	};
 
 	RuleSet.prototype.toString = function() {

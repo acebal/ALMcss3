@@ -1,8 +1,8 @@
 module('Parser');
 
-var parser = ALMCSS.parser.Parser,
-	readFile = ALMCSS.stylesheet.readFile,
-	Declaration = ALMCSS.css.Declaration,
+var parser = ALMCSS.stylesheet.parser.Parser,
+	readFile = ALMCSS.stylesheet.parser.readFile,
+	Declaration = ALMCSS.stylesheet.css.Declaration,
 	templates = ALMCSS.template.templates;
 
 var input, ruleSet, rule, declarations, declaration, template,
