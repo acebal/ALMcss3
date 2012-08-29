@@ -137,13 +137,17 @@ ALMCSS.template.dom = function() {
 		};
 
 		var slot, htmlElement, slotsIterator = template.iterator();
+
+		template.htmlElement.style.width = template.computedWidth + 'px';
+		template.htmlElement.style.height = template.computedHeight + 'px';
+
 		while (slotsIterator.hasNext()) {
 			slot = slotsIterator.next();
 			htmlElement = slot.htmlElement;
-			htmlElement.style.left = getColumnOffset(slot.startColumn);
-			htmlElement.style.top = getRowOffset(slot.startRow);
-			htmlElement.style.width = slot.computedWidth;
-			htmlElement.style.height = slot.computedHeight;
+			htmlElement.style.left = getColumnOffset(slot.startColumn) + 'px';
+			htmlElement.style.top = getRowOffset(slot.startRow) + 'px';
+			htmlElement.style.width = slot.computedWidth + 'px';
+			htmlElement.style.height = slot.computedHeight + 'px';
 			htmlElement.style.position = 'absolute';
 		}
 

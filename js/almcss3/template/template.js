@@ -648,8 +648,13 @@ ALMCSS.template = function() {
                 createColumns(this.htmlElement);
                 log('OK, they have been created:\n' + columns);
                 log('Now, computing the widths...');
-                this.computedWidths = sizing.computeTemplateWidth(this);
-
+                this.computedWidths = sizing.computeTemplateWidths(this);
+	            // TODO: Review and refactor this code (it probably shouldn't be here)
+	            var templateWidth = 0, i;
+	            for (i = 0; i < this.computedWidths.length; i++) {
+		            templateWidth = templateWidth + this.computedWidths[i];
+	            }
+	            this.computedWidth = templateWidth;
             }
 		};
 

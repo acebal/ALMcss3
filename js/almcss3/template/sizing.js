@@ -223,13 +223,14 @@ ALMCSS.template.sizing = function () {
 			logger.groupEnd();
 		};
 
-		var computeTemplateWidth = function (template) {
+		var computeTemplateWidths = function (template) {
 			var computedColumnWidths;
 			logger.group('Computing widths of template %o...', template);
 			computedColumnWidths = computeColumnWidths(template);
 			computeSlotsWidths(template, computedColumnWidths);
 			log('All widths (for columns and for every slot in the template) have been computed');
 			logger.groupEnd();
+			return computedColumnWidths;
 		};
 
 		// This is the public method that will be called by the main function
@@ -248,8 +249,8 @@ ALMCSS.template.sizing = function () {
 		};
 
 		return {
-			computeTemplateWidth:computeTemplateWidth,
-			computeWidths:computeWidths
+			computeTemplateWidths: computeTemplateWidths,
+			computeWidths: computeWidths
 		};
 
 	}();
@@ -258,7 +259,8 @@ ALMCSS.template.sizing = function () {
 
 		var computeTemplateHeights = function (template) {
 
-			var rows = template.getRows();
+			var rows = template.getRows(),
+				i, templateHeight = 0;
 
 			// Step 1. Computing Single-Row Slots
 			// ----------------------------------
@@ -281,7 +283,7 @@ ALMCSS.template.sizing = function () {
 			var computeSingleRowSlots = function() {
 				var i, j, slots, slotHeight;
 
-				log.group('Step 1: Computing single-row slots...');
+				logger.group('Step 1: Computing single-row slots...');
 
 				// For each row in the template where `row.height` is auto or '*'
 				for (i = 0; i < rows.length; i++) {
@@ -296,15 +298,15 @@ ALMCSS.template.sizing = function () {
 							slotHeight = slots[j].getContentHeight();
 							if (slotHeight > rows[i].computedHeight) {
 								info('Computed height of row %d is set to %d pixels ' +
-									'(the height of its single-row slot %s',
-									i, slots[j].name);
+									'(the height of its single-row slot %s)',
+									i, slotHeight, slots[j].name);
 								rows[i].computedHeight = slotHeight;
 							}
 						}
 					}
 				}
 
-				log.groupEnd();
+				logger.groupEnd();
 			};
 
 			// Step 2. Rows of Equal Height
@@ -321,7 +323,7 @@ ALMCSS.template.sizing = function () {
 			var computeEqualHeightRows = function() {
 				var i, largestHeight = 0;
 
-				log.group('Step 2: Computing equal-height rows...');
+				logger.group('Step 2: Computing equal-height rows...');
 
 				// For each row in the template where `row.height` is '*'
 				for (i = 0; i < rows.length; i++) {
@@ -340,10 +342,10 @@ ALMCSS.template.sizing = function () {
 					}
 				}
 				info("The computed height of all '*' row has been set to the largest " +
-					"of the heights of all the '*' rows computed in the step 1: ' +" +
+					"of the heights of all the '*' rows computed in the step 1: " +
 					"'%d pixels", largestHeight);
 
-				log.groupEnd();
+				logger.groupEnd();
 			};
 
 			// Step 3. Computing Multi-Row Slots
@@ -369,7 +371,7 @@ ALMCSS.template.sizing = function () {
 			var sumComputedHeightOfRowspan = function (startRow, endRow) {
 				var i, result = 0;
 
-				log.group('Computing the sum of the computed height of span of rows %d-%d...',
+				logger.group('Computing the sum of the computed height of span of rows %d-%d...',
 							startRow, endRow);
 
 				for (i = startRow; i < endRow + 1; i++) {
@@ -379,14 +381,14 @@ ALMCSS.template.sizing = function () {
 				info('The sum of the computed heights of rows from %d to %d is %d pixels',
 					startRow, endRow, result);
 
-				log.groupEnd();
+				logger.groupEnd();
 				return result;
 			};
 
 			var sumComputedHeightOfAutoAndEqualRows = function (startRow, endRow) {
 				var i, row, result = 0;
 
-				log.group("Getting the sum of the computed height of 'auto' " +
+				logger.group("Getting the sum of the computed height of 'auto' " +
 						"and '*' rows in %d-%d...", startRow, endRow);
 
 				for (i = startRow; i < endRow + 1; i++) {
@@ -404,7 +406,7 @@ ALMCSS.template.sizing = function () {
 					info('There are not expandable rows in the range %d-%d', startRow, endRow);
 				}
 
-				log.groupEnd();
+				logger.groupEnd();
 				return result;
 			};
 
@@ -412,7 +414,7 @@ ALMCSS.template.sizing = function () {
 			var distributeExcessOfHeightAmongRows = function(excess, startRow, endRow) {
 				var i, row, amount, totalHeight;
 
-				log.group("Distributing %d pixels among 'auto' and '*' rows in %d-%d...",
+				logger.group("Distributing %d pixels among 'auto' and '*' rows in %d-%d...",
 						excess, startRow, endRow);
 
 				totalHeight = sumComputedHeightOfAutoAndEqualRows(startRow, endRow);
@@ -432,14 +434,14 @@ ALMCSS.template.sizing = function () {
 					}
 				}
 
-				log.groupEnd();
+				logger.groupEnd();
 			};
 
 			var computeMultiRowSlots = function() {
 				var slot, slotHeight, sumOfComputedHeightOfRows,
 					excessOfHeight, slotsIterator = template.iterator();
 
-				log.group('Step 3: Computing the height of multi-row slots...');
+				logger.group('Step 3: Computing the height of multi-row slots...');
 
 				while (slotsIterator.hasNext()) {
 					slot = slotsIterator.next();
@@ -507,7 +509,7 @@ ALMCSS.template.sizing = function () {
 
 				}
 
-				log.groupEnd();
+				logger.groupEnd();
 
 			};
 
@@ -521,35 +523,41 @@ ALMCSS.template.sizing = function () {
 			// The Height Algorithm
 			// --------------------
 
-			var computeHeights = function (template) {
+			logger.group('Computing the heights of template %d...', template.getId());
 
-				log.group('Computing the heights of template %d...', template.getId());
+			computeSingleRowSlots();
+			computeEqualHeightRows();
+			computeMultiRowSlots();
+			computeSingleRowSlots();
 
-				computeSingleRowSlots();
-				computeEqualHeightRows();
-				computeMultiRowSlots();
-				computeSingleRowSlots();
+			for (i = 0; i < rows.length; i++) {
+				templateHeight = templateHeight + rows[i].computedHeight;
+			}
+			template.computedHeight = templateHeight;
 
-				log.groupEnd();
-
-			};
+			logger.groupEnd();
 
 		};
 
 		var computeHeights = function (templates) {
 
-			log.groupCollapsed('Computing heights...');
+			logger.group('Computing heights...');
 
 			for (var i = 0; i < templates.length; i++) {
 				computeTemplateHeights(templates[i]);
 			}
 
-			log.groupEnd();
+			logger.groupEnd();
 		};
 
-	};
+		return {
+			computeHeights: computeHeights
+		};
+
+	}();
 
 	return {
+		computeTemplateWidths: WidthAlgorithm.computeTemplateWidths,
 		computeWidths: WidthAlgorithm.computeWidths,
 		computeTemplateWidth: WidthAlgorithm.computeTemplateWidth,
 		computeHeights: HeightAlgorithm.computeHeights
