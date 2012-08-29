@@ -127,6 +127,7 @@ var ALMCSS = function() {
 			positionedElements = ALMCSS.template.positionedElements,
 			moveElementsIntoSlots = ALMCSS.template.dom.moveElementsIntoSlots,
 			computeWidths = ALMCSS.template.sizing.computeWidths,
+			computeHeights = ALMCSS.template.sizing.computeHeights,
 			i;
 
 		info('Starting the main function of ALMCSS3...');
@@ -146,6 +147,7 @@ var ALMCSS = function() {
 		createTemplateElements(templates);
 		moveElementsIntoSlots(positionedElements);
 		computeWidths(templates);
+		computeHeights(templates);
 	};
 
 	// Loading Modules

@@ -137,7 +137,8 @@ ALMCSS.domUtils = function() {
 		getComputedHeight: getComputedHeight,
 		lengthToPixels: lengthToPixels,
 		computeIntrinsicPreferredWidth: computeIntrinsicPreferredWidth,
-		computeIntrinsicMinimumWidth: computeIntrinsicMinimumWidth
+		computeIntrinsicMinimumWidth: computeIntrinsicMinimumWidth,
+		computeContentHeight: computeContentHeight
 	};
 
 }();

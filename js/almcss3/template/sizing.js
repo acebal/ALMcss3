@@ -153,12 +153,11 @@ ALMCSS.template.sizing = function () {
 			return computedWidths;
 		};
 
-		var computeTemplateWidth = function (template) {
-
+		var computeColumnWidths = function (template) {
 			logger.group('Computing the width of the template ' + template.getId() + '...');
 			info('(Currently, all templates are computed as is they had an a-priori width)');
 
-			var columns, element, elementWidth, sumOfIntrinsicMinimumWidths, amount,
+			var columns, element, elementWidth, sumOfIntrinsicMinimumWidths,
 				computedWidths = [], i;
 
 			assert(template.getColumns(), 'Columns must have been created before computing the width');
@@ -185,14 +184,65 @@ ALMCSS.template.sizing = function () {
 					columns[i].setComputedWidth(computedWidths[i]);
 				}
 			}
-			info('All widths have been computed: ' + computedWidths);
+			info('All column widths have been computed: ' + computedWidths);
 			logger.groupEnd();
-			// TODO: What to do with computedWidths?
+			return computedWidths;
 		};
+
+		// Calculates the computed width of a slot (the sum of the previously
+		// computed width of the columns which this slot belongs to). It receives
+		// both the `Slot` object and an array with the numeric values of the
+		// computed width of the columns of the template.
+		//
+		// This method modifies the `slot.computedWidth` property of the `Slot`
+		// instance.
+
+		var computeSlotWidth = function (slot, computedColumnWidths) {
+			info('Setting the computed width of slot ' + slot.name + '...');
+			log('Current slot.computedWidth = %d pixels', slot.computedWidth);
+			slot.computedWidth = 0;
+			for (var i = slot.startColumn; i < slot.startColumn + slot.colspan; i++) {
+				slot.computedWidth = slot.computedWidth + computedColumnWidths[i];
+			}
+			info('Slot %s has been set a computed width of %d pixels',
+					slot.name, slot.computedWidth);
+		};
+
+		// Calculates the computed width of all slots of the template, modifying
+		// each `slot.computedWidth` property of each `Slot` object.
+
+		var computeSlotsWidths = function (template, computedColumnWidths) {
+			var slotsIterator, slot;
+
+			logger.group('Computing the widths of each slot in the template');
+			slotsIterator = template.iterator();
+			while (slotsIterator.hasNext()) {
+				slot = slotsIterator.next();
+				computeSlotWidth(slot, computedColumnWidths);
+			}
+			logger.groupEnd();
+		};
+
+		var computeTemplateWidth = function (template) {
+			var computedColumnWidths;
+			logger.group('Computing widths of template %o...', template);
+			computedColumnWidths = computeColumnWidths(template);
+			computeSlotsWidths(template, computedColumnWidths);
+			log('All widths (for columns and for every slot in the template) have been computed');
+			logger.groupEnd();
+		};
+
+		// This is the public method that will be called by the main function
+		// of ALMcss, which computes all the widths in the template.
 
 		var computeWidths = function (templates) {
 			for (var i = 0; i < templates.length; i++) {
-				//computeTemplateWidth(templates[i]);
+				// Instead of calling directly to `computeTemplateWidth` a level
+				// of indirection is introduced by letting the template itself
+				// be which invoke that method, passing itself to it as a
+				// parameter. That allows the template object to perform some
+				// additional tasks immediately before and after the widths are
+				// computed, if it were necessary.
 				templates[i].computeWidths();
 			}
 		};
@@ -225,14 +275,17 @@ ALMCSS.template.sizing = function () {
 			// at least as tall as the tallest slot of that row that do not
 			// span (rowspan=1). The height of a slot, for the purpose of this
 			// algorithm, is determined by its contents. Of course, it depends
-			// on the width of the slot, so _computing the heights must
-			// necessarily be done after computing the widths_.
+			// on the width of the slot (`slot.computedWidth`), so _computing
+			// the heights must necessarily be done after computing the widths_.
 
 			var computeSingleRowSlots = function() {
-				var i, j, slots, slotHeight, columnWidth;
+				var i, j, slots, slotHeight;
+
+				log.group('Step 1: Computing single-row slots...');
 
 				// For each row in the template where `row.height` is auto or '*'
 				for (i = 0; i < rows.length; i++) {
+					log("First, the computed height of 'auto' and '*' rows is set to 0");
 					if (rows[i].height === Height.auto || rows[i].height === Height.equal) {
 						rows[i].computedHeight = 0;
 					}
@@ -240,14 +293,18 @@ ALMCSS.template.sizing = function () {
 					slots = template.getSlotsOfRow(i);
 					for (j = 0; j < slots.length; j++) {
 						if (slots[j].rowspan === 1) {
-							slotHeight = slots[j].getContentHeight(columnWidth);
-							columnWidth = template.getColumnWidth(j);
+							slotHeight = slots[j].getContentHeight();
 							if (slotHeight > rows[i].computedHeight) {
+								info('Computed height of row %d is set to %d pixels ' +
+									'(the height of its single-row slot %s',
+									i, slots[j].name);
 								rows[i].computedHeight = slotHeight;
 							}
 						}
 					}
 				}
+
+				log.groupEnd();
 			};
 
 			// Step 2. Rows of Equal Height
@@ -263,6 +320,8 @@ ALMCSS.template.sizing = function () {
 
 			var computeEqualHeightRows = function() {
 				var i, largestHeight = 0;
+
+				log.group('Step 2: Computing equal-height rows...');
 
 				// For each row in the template where `row.height` is '*'
 				for (i = 0; i < rows.length; i++) {
@@ -280,31 +339,220 @@ ALMCSS.template.sizing = function () {
 						rows[i].computedHeight = largestHeight;
 					}
 				}
+				info("The computed height of all '*' row has been set to the largest " +
+					"of the heights of all the '*' rows computed in the step 1: ' +" +
+					"'%d pixels", largestHeight);
+
+				log.groupEnd();
 			};
 
 			// Step 3. Computing Multi-Row Slots
 			// ---------------------------------
 
-			var computeMultiRowSlots = function() {
+			// Calculates the computed width of a slot (the sum of the previously
+			// computed width of the columns which this slot belongs to). It receives
+			// both the `Slot` object and an array with the numeric values of the
+			// computed width of the columns of the template.
+			//
+			// This method modifies the `slot.computedWidth` property of the `Slot`
+			// instance.
 
+
+			// This function is used by `computeMultiRowSlots' to obtain the sum
+			// of the computed height of a given span of rows. It will be used
+			// to get the sum of the rows that a certain slot spans, and thus
+			// determine whether the `contentHeight` of the slot is less or
+			// greater than that value and if it must be made _taller_ to have
+			// the same height than the sum of its spanned rows, or if are
+			// those rows which should be enlarged.
+
+			var sumComputedHeightOfRowspan = function (startRow, endRow) {
+				var i, result = 0;
+
+				log.group('Computing the sum of the computed height of span of rows %d-%d...',
+							startRow, endRow);
+
+				for (i = startRow; i < endRow + 1; i++) {
+					log('Computed height of row %d is %d pixels', rows[i].computedHeight);
+					result = result + rows[i].computedHeight;
+				}
+				info('The sum of the computed heights of rows from %d to %d is %d pixels',
+					startRow, endRow, result);
+
+				log.groupEnd();
+				return result;
+			};
+
+			var sumComputedHeightOfAutoAndEqualRows = function (startRow, endRow) {
+				var i, row, result = 0;
+
+				log.group("Getting the sum of the computed height of 'auto' " +
+						"and '*' rows in %d-%d...", startRow, endRow);
+
+				for (i = startRow; i < endRow + 1; i++) {
+					row = template.getRows()[i];
+					if (row.height === Height.auto || row.height === Height.equal) {
+						log('Computed height of non-length row %d = %d pixels',
+							i, row.computedHeight);
+						result = result + row.computedHeight;
+					}
+				}
+				if (result) {
+					info("The sum of computed heights of 'auto' and '*' rows " +
+						"from %d to %d is %d pixels", startRow, endRow, result);
+				} else {
+					info('There are not expandable rows in the range %d-%d', startRow, endRow);
+				}
+
+				log.groupEnd();
+				return result;
 			};
 
 
+			var distributeExcessOfHeightAmongRows = function(excess, startRow, endRow) {
+				var i, row, amount, totalHeight;
+
+				log.group("Distributing %d pixels among 'auto' and '*' rows in %d-%d...",
+						excess, startRow, endRow);
+
+				totalHeight = sumComputedHeightOfAutoAndEqualRows(startRow, endRow);
+
+				for (i = startRow; i < endRow + 1; i++) {
+					row = template.getRows()[i];
+					if (row.height !== Height.auto && row.height !== Height.equal) {
+						log('Row %d has been defined with an explicit height: it can not be enlarged');
+						amount = row.computedHeight *  excess / totalHeight;
+						log('For row %d, height = %d × %d / %d = %d pixels',
+								i, row.computedHeight, excess, totalHeight);
+						info('Enlarged row %d from % d to % pixels', i, row.computedHeight, amount);
+						row.computedHeight = amount;
+					} else {
+						info('No expandable rows were in the range %d-%d', startRow, endRow,
+							' (the content will overflow');
+					}
+				}
+
+				log.groupEnd();
+			};
+
+			var computeMultiRowSlots = function() {
+				var slot, slotHeight, sumOfComputedHeightOfRows,
+					excessOfHeight, slotsIterator = template.iterator();
+
+				log.group('Step 3: Computing the height of multi-row slots...');
+
+				while (slotsIterator.hasNext()) {
+					slot = slotsIterator.next();
+					if (slot.rowspan === 1) {
+						continue;
+					}
+					// <del>TO DO: Review the getContentHeight method of Slot</del>
+					//
+					// In this case, it would not be necessary to pass the
+					// computed width of the slot as a parameter, since it
+					// is evident that it is stored in the `Slot` itself
+					// (it should have been set during the process of
+					// computing widths). But... _is the `getContentHeight`
+					// method of `Slot` object called from some other place
+					// where this computed width could not have being
+					// calculates yet?
+					//
+					//     <del>slotHeight = slot.getContentHeight(slot.computedWidth);</del>
+					//
+					// <ins>No, it is not needed. It was also used (and it still
+					// is) by the `computeSingleRowSlots` method, in the first
+					// step of computing heights, where the computed column width
+					// was used. But now computed widths are also explicitly set
+					// and stored in each `Slot` object.
+
+					slotHeight = slot.getContentHeight();
+
+					// If the slot content height is less than the sum of the
+					// computed heights of the rows it span, the computed height
+					// of the slot must be set to be equal to the sum of the
+					// height of its rows.
+
+					sumOfComputedHeightOfRows = sumComputedHeightOfRowspan(
+						slot.startRow, slot.rowspan - 1);
+					if (slotHeight < sumOfComputedHeightOfRows) {
+						info('The content height of slot %s (%d) is less than ' +
+							'the sum of the height of the rows it spans (%d): ' +
+							'it is changed to tha value', slot.name, slotHeight,
+							sumOfComputedHeightOfRows);
+						slot.computedHeight = sumOfComputedHeightOfRows;
+						continue;
+					}
+
+					if (slotHeight == sumOfComputedHeightOfRows) {
+						continue;
+					}
+
+					assert(slotHeight >= sumOfComputedHeightOfRows);
+
+					// If the slot content height is larger than that of the
+					// rows it spans, those rows (obviously, only those with
+					// a height of 'auto' or '*', since those with an explicit
+					// length will have always that height) needs to be enlarged
+					// to accommodate this slot.
+
+					excessOfHeight = slotHeight - sumOfComputedHeightOfRows;
+
+					info('There is a difference of %d pixels between the height ' +
+						'of the contents of the slot %s (%d pixels) and the sum ' +
+						'of the current computed height of the rows it spans (%d ' +
+						'pixels): rows need to be enlarged',
+						excessOfHeight, slot.name, slotHeight, sumOfComputedHeightOfRows);
+
+					distributeExcessOfHeightAmongRows(slot.startRow, slot.rowspan - 1);
+
+				}
+
+				log.groupEnd();
+
+			};
+
+			// Step 4. Processing again equal-height rows
+
+			// There is nothing to implement here: it merely consists on carrying
+			// on again the step 2 to equalise the computed height of all '*' rows
+			// (in case that some of them had been changed during the processing
+			// of multi-row slots).
+
+			// The Height Algorithm
+			// --------------------
+
+			var computeHeights = function (template) {
+
+				log.group('Computing the heights of template %d...', template.getId());
+
+				computeSingleRowSlots();
+				computeEqualHeightRows();
+				computeMultiRowSlots();
+				computeSingleRowSlots();
+
+				log.groupEnd();
+
+			};
 
 		};
 
 		var computeHeights = function (templates) {
+
+			log.groupCollapsed('Computing heights...');
+
 			for (var i = 0; i < templates.length; i++) {
 				computeTemplateHeights(templates[i]);
 			}
+
+			log.groupEnd();
 		};
 
 	};
 
-
 	return {
-		computeWidths:WidthAlgorithm.computeWidths,
-		computeTemplateWidth:WidthAlgorithm.computeTemplateWidth
+		computeWidths: WidthAlgorithm.computeWidths,
+		computeTemplateWidth: WidthAlgorithm.computeTemplateWidth,
+		computeHeights: HeightAlgorithm.computeHeights
 	};
 
 }();

@@ -35,6 +35,8 @@ ALMCSS.template = function() {
 		this.startColumn = startColumn;
 		this.rowspan = 1;
 		this.colspan = 1;
+		this.computedWidth = 0;
+		this.computedHeight = 0;
 	};
 
 	Slot.emptySlot = '.';
@@ -148,6 +150,10 @@ ALMCSS.template = function() {
 
 		assert(this.htmlElement, 'For computing the height of a slot first it ' +
 			'is needed to have done the process of moving the elements into it');
+		assert(arguments.length === 0, 'This method no longer needs an explicit ' +
+			'width as a parameter');
+		assert(this.computedWidth !== undefined, 'For computing the height of ' +
+			'a slot first it is needed to have set its computed width');
 
 		return contentHeight(this.htmlElement, width);
 	};
@@ -266,6 +272,9 @@ ALMCSS.template = function() {
 	Length.prototype.toString = function() {
 		return this.value + this.unit;
 	};
+
+	// Height
+	// ------
 
 	var Height = function(value) {
 		assert(value instanceof Length || value === 'auto' || value === '*');
@@ -548,7 +557,8 @@ ALMCSS.template = function() {
         var sizing = ALMCSS.template.sizing;
 
         // An array of `Column` objects
-        var columns = [];
+        var columns = [],
+	        computedWidths;
 
         var getSlotsOfColumn = function(columnIndex) {
             var i, j, row, slotName, result = [];
@@ -572,6 +582,7 @@ ALMCSS.template = function() {
 
 		return {
 			/* htmlElement: null, */
+			/* computedWidths: null, */
 			getId: function() {
 				return templateId;
 			},
@@ -637,7 +648,8 @@ ALMCSS.template = function() {
                 createColumns(this.htmlElement);
                 log('OK, they have been created:\n' + columns);
                 log('Now, computing the widths...');
-                sizing.computeTemplateWidth(this);
+                this.computedWidths = sizing.computeTemplateWidth(this);
+
             }
 		};
 

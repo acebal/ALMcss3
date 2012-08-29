@@ -113,9 +113,52 @@ ALMCSS.template.dom = function() {
 		}
 	};
 
+	// Painting
+	// --------
+
+	var paintTemplate = function (template) {
+
+		var getColumnOffset = function (column) {
+			var computedWidths = template.computedWidths,
+				result = 0, i;
+			for (i = 0; i < column; i++) {
+				result = result + computedWidths[i];
+			}
+			return result;
+		};
+
+		var getRowOffset = function (row) {
+			var rows = template.getRows(),
+				result = 0, i;
+			for (i = 0; i < row; i++) {
+				result = result + rows[i].computedHeight;
+			}
+			return result;
+		};
+
+		var slot, htmlElement, slotsIterator = template.iterator();
+		while (slotsIterator.hasNext()) {
+			slot = slotsIterator.next();
+			htmlElement = slot.htmlElement;
+			htmlElement.style.left = getColumnOffset(slot.startColumn);
+			htmlElement.style.top = getRowOffset(slot.startRow);
+			htmlElement.style.width = slot.computedWidth;
+			htmlElement.style.height = slot.computedHeight;
+			htmlElement.style.position = 'absolute';
+		}
+
+	};
+
+	var paint = function (templates) {
+		for (var i = 0; i < templates.length; i++) {
+			paintTemplate(templates[i]);
+		}
+	};
+
 	return {
 		createTemplateElements: createTemplateElements,
-		moveElementsIntoSlots: moveElementsIntoSlots
+		moveElementsIntoSlots: moveElementsIntoSlots,
+		paint: paint
 	};
 
 }();
