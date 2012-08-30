@@ -1,13 +1,14 @@
 body {
-    display: "abc"
-              @ @ 185px;
+    display: "aab"
+             "dcb"
+              600px @ @;
 }
 
 #header     { position: c; }
 #content    { position: a; }
 #footer     { position: b; }
 
-ul          { position: c; }
+ul          { position: d; }
 
 body {
     background: #fbf1cd;

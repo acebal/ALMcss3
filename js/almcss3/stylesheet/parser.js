@@ -1650,64 +1650,88 @@ ALMCSS.stylesheet.parser = function() {
 		//
 		var parseDeclaration = function(rule) {
 
+			// Imports the function to be called when a `position` property
+			// with a valid value for the Template Layout Module is found,
+			// like, for example:
+			//
+			//     position: a;
+			//
 			var addPositionedElement = ALMCSS.template.addPositionedElement;
 
 			var property, value, isTemplate, previousToken, declaration, template;
-			property = parseProperty().toLowerCase();
-			value = '';
-			match(TokenType.COLON);
-			nextToken();
-			parseWhitespace();
 
-			// Is it a `display` property with a template definition as a value?
-			if (property === 'display' && currentToken.isString()) {
-				info("Found a 'display' property with a initial " +
-					'string value: assuming it is a template');
-				isTemplate = true;
-				template = parseTemplateDefinition(rule.selectorText);
-				value = template.cssText;
-				info('A template has been matched:\n' + template);
+			try {
 
-			// Is it a `position` property with the name of a slot as a value?
-			} else if (property === 'position' && currentToken.isIdent() &&
-					!currentToken.isIdent('absolute') && !currentToken.isIdent('relative') &&
-					!currentToken.isIdent('static') && !currentToken.isIdent('fixed')) {
-				info("Found a 'position' property with a identifier " +
-					'as a value: assuming it is the name of a slot ' +
-					'(' + rule.selectorText + ' => at slot ' + currentToken.name + ')');
-				addPositionedElement(rule.selectorText, currentToken.name);
-			}
-
-			// For every other CSS property different than `display` and `position`,
-			// or for those `display` and `position` properties with a "normal" value
-			// and that thus do not belong to the Template Layout Module, the parser
-			// does not need to do anything, since those properties are recognised and
-			// processed by he browser. It simply reads tokens from the lexical scanner
-			// until either a semicolon (';') (end of a declaration) or a right brace
-			// ('}') (end of a rule, in that case the semicolon is optional after the
-			// ast declaration) are found.
-
-			while (currentToken !== Token.SEMICOLON && currentToken !== Token.RBRACE) {
-				previousToken = currentToken;
+				property = parseProperty().toLowerCase();
+				value = '';
+				match(TokenType.COLON);
 				nextToken();
-				if (previousToken === Token.S) {
-					if (currentToken === Token.SEMICOLON || currentToken === Token.RBRACE) {
-						break;
+				parseWhitespace();
+
+				// Is it a `display` property with a template definition as a value?
+				if (property === 'display' && currentToken.isString()) {
+					info("Found a 'display' property with a initial " +
+						'string value: assuming it is a template');
+					isTemplate = true;
+					template = parseTemplateDefinition(rule.selectorText);
+					value = template.cssText;
+					info('A template has been matched:\n' + template);
+
+				// Is it a `position` property with the name of a slot as a value?
+				} else if (property === 'position' && currentToken.isIdent() &&
+						!currentToken.isIdent('absolute') && !currentToken.isIdent('relative') &&
+						!currentToken.isIdent('static') && !currentToken.isIdent('fixed')) {
+					info("Found a 'position' property with a identifier " +
+						'as a value: assuming it is the name of a slot ' +
+						'(' + rule.selectorText + ' => at slot ' + currentToken.name + ')');
+					addPositionedElement(rule.selectorText, currentToken.name);
+				}
+
+				// For every other CSS property different than `display` and `position`,
+				// or for those `display` and `position` properties with a "normal" value
+				// and that thus do not belong to the Template Layout Module, the parser
+				// does not need to do anything, since those properties are recognised and
+				// processed by he browser. It simply reads tokens from the lexical scanner
+				// until either a semicolon (';') (end of a declaration) or a right brace
+				// ('}') (end of a rule, in that case the semicolon is optional after the
+				// ast declaration) are found.
+
+				while (currentToken !== Token.SEMICOLON && currentToken !== Token.RBRACE) {
+					previousToken = currentToken;
+					nextToken();
+					if (previousToken === Token.S) {
+						if (currentToken === Token.SEMICOLON || currentToken === Token.RBRACE) {
+							break;
+						}
+					}
+					if (!isTemplate) {
+						value = value + previousToken.lexeme;
 					}
 				}
-				if (!isTemplate) {
-					value = value + previousToken.lexeme;
+				if (currentToken === Token.SEMICOLON) {
+					nextToken();
 				}
+				parseWhitespace();
+				declaration = new Declaration(property, value);
+				if (isTemplate) {
+					declaration.template = template;
+				}
+				rule.addDeclaration(declaration);
+
+			} catch (e) {
+				error('A error was found parsing a declaration: it is omitted');
+				while (currentToken !== Token.EOF) {
+					if (currentToken === Token.SEMICOLON ||
+						currentToken === Token.RBRACE) {
+						break;
+					}
+					nextToken();
+				}
+				if (currentToken !== Token.EOF) {
+					nextToken();
+				}
+				parseWhitespace();
 			}
-			if (currentToken === Token.SEMICOLON) {
-				nextToken();
-			}
-			parseWhitespace();
-			declaration = new Declaration(property, value);
-			if (isTemplate) {
-				declaration.template = template;
-			}
-			rule.addDeclaration(declaration);
 		};
 
 		//

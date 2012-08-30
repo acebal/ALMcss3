@@ -28,8 +28,11 @@ ALMCSS.template.dom = function() {
 			slotElement = document.createElement('div');
 			slotElement.setAttribute('id', slot.slotId);
 			slotElement.setAttribute('class', SLOT_CLASS);
-			slotElement.style.position = 'relative'; // TODO: Change it to absolute later
 			if (VISUAL_DEBUG) {
+				info("Slots are set to 'position: relative' when they are " +
+					"created: they will be changed to 'absolute' later, " +
+					"during the painting stage");
+				slotElement.style.position = 'relative';
 				slotLabel = document.createElement('span');
 				slotLabel.setAttribute('class', SLOT_LABEL_CLASS);
 				slotLabel.innerHTML = slot.slotId;
@@ -40,6 +43,30 @@ ALMCSS.template.dom = function() {
 		}
 	};
 
+	var createTemplateElement = function(template) {
+		var templateElement, templateLabel;
+		// __Currently, it is assumed that templates are defined using a single selector per CSS rule.__
+		var templateElement = document.querySelector(template.getSelectorText());
+		templateElement.setAttribute('id', template.getId());
+		templateElement.setAttribute('class', TEMPLATE_CLASS);
+		if (VISUAL_DEBUG) {
+			templateElement.style.position = 'relative';
+			templateLabel = document.createElement('span');
+			templateLabel.setAttribute('class', TEMPLATE_LABEL_CLASS);
+			templateLabel.innerHTML = template.getId();
+			templateElement.appendChild(templateLabel);
+		}
+		// The HTMLElement object of the DOM __is modified__.
+		templateElement.isTemplate = true;
+		// The DOM HTMLElement also stores a reference to the template it belongs.
+		templateElement.template = template;
+		// And, of course, the template stores a reference to the HTMLElement created.
+		template.htmlElement = templateElement;
+		// Create the slots.
+		createSlotElements(template);
+	};
+
+	/*
 	var createTemplateElement = function(template) {
 		var templateElement, templateLabel;
 		templateElement = document.createElement('div');
@@ -60,10 +87,11 @@ ALMCSS.template.dom = function() {
 		// The DOM HTMLElement also stores a reference to the template it belongs.
 		containerElement.template = template;
 		// And, of course, the template stores a reference to the HTMLElement created.
-		template.htmlElement = containerElement;
+		template.htmlElement = htmlElement;
 		// Create the slots.
 		createSlotElements(template);
 	};
+	*/
 
 	var createTemplateElements = function(templates) {
 		var i;

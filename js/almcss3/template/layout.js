@@ -1,8 +1,11 @@
 var ALMCSS = ALMCSS || {};
 
-ALMCSS.template.sizing = function () {
+ALMCSS.template.layout = function () {
 
 	'use strict';
+
+	// Imports
+	// -------
 
 	var assert = ALMCSS.debug.assert,
 		LoggerLevel = ALMCSS.debug.LoggerLevel,
@@ -10,6 +13,7 @@ ALMCSS.template.sizing = function () {
 		log = logger.log,
 		info = logger.info,
 		getComputedWidth = ALMCSS.domUtils.getComputedWidth,
+		lengthToPixels = ALMCSS.domUtils.lengthToPixels,
 		Height = ALMCSS.template.Height;
 
 	// Width Algorithm
@@ -47,9 +51,9 @@ ALMCSS.template.sizing = function () {
 		//
 		// But some clarifications need yet to be done:
 		// - What does it happen with equal-width columns? The specification does
-		//   not say anything about the constraint that they impose on the sizing
+		//   not say anything about the constraint that they impose on the layout
 		//   algorithm for computing the widths.
-		// - What does _span of columns_ mean?
+		// - What does _span of columns_ mean in this context?
 		// - What "element" is exactly referring the specification to?
 		//
 		// TODO: Resolve this questions with Bert.
@@ -255,62 +259,137 @@ ALMCSS.template.sizing = function () {
 
 	}();
 
+	// Height Algorithm
+	// ----------------
+
 	var HeightAlgorithm = function() {
 
 		var computeTemplateHeights = function (template) {
 
 			var rows = template.getRows(),
-				i, templateHeight = 0;
+				templateHeight = 0;
 
-			// Step 1. Computing Single-Row Slots
-			// ----------------------------------
-			// A first step of the algorithm for computing the height consists
-			// on calculating the minimum height of every row, considering only
-			// the slots of that row that do not span (rowspan=1). This step
-			// must be only done for rows for which a height value other than a
-			// explicit length have been set in the template definition. That
-			// is, only rows with a defined height of auto or * (_asterisk_)
-			// must be processed in this first step, since those with an explicit
-			// length already have their height constrained to that value.
-			//
-			// Each row with a defined height of auto or * (_asterisk_) must be
-			// at least as tall as the tallest slot of that row that do not
-			// span (rowspan=1). The height of a slot, for the purpose of this
-			// algorithm, is determined by its contents. Of course, it depends
-			// on the width of the slot (`slot.computedWidth`), so _computing
-			// the heights must necessarily be done after computing the widths_.
 
-			var computeSingleRowSlots = function() {
-				var i, j, slots, slotHeight;
+			// 1. Computing Rows with an Explicit Height
+			// -----------------------------------------
+			// First, the algorithm looks for rows defined with a height
+			// set an explicit _length_. That value will be the computed
+			// height of the row, and it will not be changed by any other
+			// phase of the height algorithm.
 
-				logger.group('Step 1: Computing single-row slots...');
+			var computeLengthRows = function() {
+				var i, j, computedRows, rowHeight, slots;
 
-				// For each row in the template where `row.height` is auto or '*'
+				logger.group('Computing rows with an explicit height...');
+
+				computedRows = 0;
 				for (i = 0; i < rows.length; i++) {
-					log("First, the computed height of 'auto' and '*' rows is set to 0");
-					if (rows[i].height === Height.auto || rows[i].height === Height.equal) {
-						rows[i].computedHeight = 0;
-					}
-					// For each slot in that row for which `slot.colspan` is 1
-					slots = template.getSlotsOfRow(i);
-					for (j = 0; j < slots.length; j++) {
-						if (slots[j].rowspan === 1) {
-							slotHeight = slots[j].getContentHeight();
-							if (slotHeight > rows[i].computedHeight) {
-								info('Computed height of row %d is set to %d pixels ' +
-									'(the height of its single-row slot %s)',
-									i, slotHeight, slots[j].name);
-								rows[i].computedHeight = slotHeight;
-							}
+					if (rows[i].height.isLength()) {
+						computedRows = computedRows + 1;
+						info('Row %d has been defined with an explicit height of %s', i, rows[i].height);
+						rowHeight = lengthToPixels(rows[i].height, template.htmlElement);
+						log('%s has been converted to a computed value of %d pixels', rows[i].height, rowHeight);
+						rows[i].computedHeight = rowHeight;
+						info('Computed height of row %d has been set to %d pixels', i, rows[i].computedHeight);
+
+						logger.group('Assigning that height to all single-row slots in the row');
+						slots = template.getSlotsOfRow(i);
+							for (j = 0; j < slots.length; j++) {
+								slots[j].computedHeight = rowHeight;
+								log('Slot %s now has a computed height of %d pixels', slots[j].name, rowHeight);
 						}
+						logger.groupEnd();
 					}
+				}
+
+				if (computedRows) {
+					info('%d rows with an explicit height have been processed', computedRows);
+				} else {
+					info('There were no rows with a height set to an explicit length');
 				}
 
 				logger.groupEnd();
 			};
 
-			// Step 2. Rows of Equal Height
-			// ----------------------------
+			// 2. Computing the Minimum Height of Each Row
+			// -------------------------------------------
+			// A second step of the algorithm for computing the height consists
+			// on calculating the minimum height of every row, considering only
+			// the slots of that row that do not span (`slot.rowspan === 1`).
+			// This must be only done for rows for which a height value other
+			// than a explicit length has been set in the template definition.
+			// That is, only rows with a defined height of auto or * (_asterisk_)
+			// must be processed in this step, since those with an explicit
+			// length already have their height constrained to that value.
+			//
+			// Each row with a defined height of auto or * (_asterisk_) must be
+			// at least as tall as the tallest slot of that row that do not
+			// span. The height of a slot, for the purpose of this algorithm,
+			// _is determined by its contents_. Of course, it depends on the
+			// width of the slot (`slot.computedWidth`), so _computing the
+			// heights must necessarily be done after computing the widths_.
+
+			var computeMinimumHeights = function() {
+				var i, j, computedRows, slots, slotHeight, largestSlot, rowHeight;
+
+				logger.group('Computing the minimum height of each row...');
+
+				computedRows = 0;
+
+				// For each row in the template where `row.height` is auto or '*'
+				for (i = 0; i < rows.length; i++) {
+
+					if (rows[i].height !== Height.auto && rows[i].height !== Height.equal) {
+						continue;
+					}
+					computedRows = computedRows + 1;
+
+					// Find the tallest of the single-row slots in that row.
+					slots = template.getSlotsOfRow(i);
+					rowHeight = 0;
+					for (j = 0; j < slots.length; j++) {
+						if (slots[j].rowspan === 1) {
+							// Is the height of the contents of this slot
+							// larger than the maximum height found so far?
+							// If so, setting it as the new maximum height
+							// of all the single-row slots of this row.
+							slotHeight = slots[j].getContentHeight();
+							if (slotHeight > rowHeight) {
+								rowHeight = slotHeight;
+								largestSlot = slots[j];
+							}
+						}
+					}
+					info('Computed height of row %d has been set to %d ' +
+						'(the height of its taller single-row slot: %s)',
+						i, slotHeight, largestSlot.name);
+					rows[i].computedHeight = slotHeight;
+
+					// Once the row has been set a computed height equal to
+					// the content height of its tallest slot that spans
+					// exactly this single row, it is traversed again to
+					// assign that height to all its slots (well, obviously,
+					// only those for which `slot.startRow` is this row and
+					// `slot.colspan === 1`).
+
+					for (j = 0; j < slots.length; j++) {
+						if (slots[j].rowspan === 1) {
+							slots[j].computedHeight = rows[i].computedHeight;
+						}
+					}
+				}
+
+				if (computedRows) {
+					info("%d rows with 'auto' or '*' as height have been processed", computedRows);
+				} else {
+					info("There were no 'auto' or '*' rows");
+				}
+
+				logger.groupEnd();
+			};
+
+			// 3. Rows of Equal Height
+			// -----------------------
 			// The Template Layout Module makes very easy to have equal‐height
 			// rows, simply by assigning the selected rows a height of *
 			// (_asterisk_). The first step of the algorithm did not took this
@@ -321,52 +400,54 @@ ALMCSS.template.sizing = function () {
 			// the previous stage.
 
 			var computeEqualHeightRows = function() {
-				var i, largestHeight = 0;
+				var i, computedRows, largestHeight;
 
-				logger.group('Step 2: Computing equal-height rows...');
+				logger.group('Computing equal-height rows...');
 
-				// For each row in the template where `row.height` is '*'
+				computedRows = 0;
+
+				// Get the largest of the minimum heights of rows with a
+				// '*' height that were computed on the previous step.
+				largestHeight = 0
 				for (i = 0; i < rows.length; i++) {
 					if (rows[i].height === Height.equal) {
-						// Get the largest of the minimum heights
-						// that were computed on the previous step
 						if (rows[i].computedHeight > largestHeight) {
+							computedRows = computedRows + 1;
 							largestHeight = rows[i].computedHeight;
 						}
 					}
 				}
-				// For each row in the template where `row.height` is '*'
+
+				// For each row in the template where `row.height` is '*',
+				// it is set to the largest height of all _equal_ rows.
 				for (i = 0; i < rows.length; i++) {
 					if (rows[i].height === Height.equal) {
 						rows[i].computedHeight = largestHeight;
 					}
 				}
-				info("The computed height of all '*' row has been set to the largest " +
-					"of the heights of all the '*' rows computed in the step 1: " +
-					"'%d pixels", largestHeight);
+
+				if (computedRows) {
+					info("The computed height of %d '*' rows has been set to " +
+						"the largest of the heights of all the '*' rows " +
+						"computed in the step 1: %d pixels",
+						computedRows, largestHeight);
+				} else {
+					info("There were no '*' rows");
+				}
 
 				logger.groupEnd();
 			};
 
-			// Step 3. Computing Multi-Row Slots
-			// ---------------------------------
+			// 4. Computing Multi-Row Slots
+			// ----------------------------
 
-			// Calculates the computed width of a slot (the sum of the previously
-			// computed width of the columns which this slot belongs to). It receives
-			// both the `Slot` object and an array with the numeric values of the
-			// computed width of the columns of the template.
-			//
-			// This method modifies the `slot.computedWidth` property of the `Slot`
-			// instance.
-
-
-			// This function is used by `computeMultiRowSlots' to obtain the sum
-			// of the computed height of a given span of rows. It will be used
-			// to get the sum of the rows that a certain slot spans, and thus
-			// determine whether the `contentHeight` of the slot is less or
-			// greater than that value and if it must be made _taller_ to have
-			// the same height than the sum of its spanned rows, or if are
-			// those rows which should be enlarged.
+			// This function is used by `computeMultiRowSlots' to obtain the
+			// sum of the computed height of a given span of rows. It will be
+			// used to get the sum of the rows that a certain slot spans, and
+			// thus determine whether the `contentHeight` of the slot is less
+			// or  greater than that value and if it must be made _taller_ to
+			// have the same height than the sum of its spanned rows, or if
+			// are those rows which should be enlarged.
 
 			var sumComputedHeightOfRowspan = function (startRow, endRow) {
 				var i, result = 0;
@@ -378,6 +459,7 @@ ALMCSS.template.sizing = function () {
 					log('Computed height of row %d is %d pixels', rows[i].computedHeight);
 					result = result + rows[i].computedHeight;
 				}
+
 				info('The sum of the computed heights of rows from %d to %d is %d pixels',
 					startRow, endRow, result);
 
@@ -410,6 +492,16 @@ ALMCSS.template.sizing = function () {
 				return result;
 			};
 
+			var areThereExpandableRows = function(startRow, endRow) {
+				var i, row;
+				for (i = startRow; i < endRow + 1; i++) {
+					row = template.getRow(i);
+					if (row.height = Height.auto || row.height === Height.equal) {
+						return true;
+					}
+				}
+				return false;
+			};
 
 			var distributeExcessOfHeightAmongRows = function(excess, startRow, endRow) {
 				var i, row, amount, totalHeight;
@@ -417,20 +509,24 @@ ALMCSS.template.sizing = function () {
 				logger.group("Distributing %d pixels among 'auto' and '*' rows in %d-%d...",
 						excess, startRow, endRow);
 
+				if (!areThereExpandableRows(startRow, endRow)) {
+					info("There are not 'auto' or '*' rows in %d-%d to be expanded: " +
+						"the content will overflow");
+					return;
+				}
+
 				totalHeight = sumComputedHeightOfAutoAndEqualRows(startRow, endRow);
 
 				for (i = startRow; i < endRow + 1; i++) {
 					row = template.getRows()[i];
 					if (row.height !== Height.auto && row.height !== Height.equal) {
 						log('Row %d has been defined with an explicit height: it can not be enlarged');
-						amount = row.computedHeight *  excess / totalHeight;
-						log('For row %d, height = %d × %d / %d = %d pixels',
-								i, row.computedHeight, excess, totalHeight);
-						info('Enlarged row %d from % d to % pixels', i, row.computedHeight, amount);
-						row.computedHeight = amount;
 					} else {
-						info('No expandable rows were in the range %d-%d', startRow, endRow,
-							' (the content will overflow');
+						amount = row.computedHeight *  excess / totalHeight;
+						log('For row %d, increment of height = %d × %d / %d = %d pixels',
+								i, row.computedHeight, excess, totalHeight, amount);
+						row.computedHeight = row.computedHeight + amount;
+						info('Enlarged row %d from % d to % pixels', i, row.computedHeight, amount);
 					}
 				}
 
@@ -505,7 +601,7 @@ ALMCSS.template.sizing = function () {
 						'pixels): rows need to be enlarged',
 						excessOfHeight, slot.name, slotHeight, sumOfComputedHeightOfRows);
 
-					distributeExcessOfHeightAmongRows(slot.startRow, slot.rowspan - 1);
+					distributeExcessOfHeightAmongRows(excessOfHeight, slot.startRow, slot.rowspan - 1);
 
 				}
 
@@ -513,27 +609,73 @@ ALMCSS.template.sizing = function () {
 
 			};
 
-			// Step 4. Processing again equal-height rows
+			// 5. Processing (Again) Equal-Height Rows
+			// ---------------------------------------
+			// Rows with a defined height of '*' (_asterisk_) must be
+			// traversed again to equalise their computed height to
+			// the tallest of all of them (in case that some of them
+			// had been changed during the processing of multi-row slots).
+			//
+			// There is nothing to implement here: the height algorithm
+			// simply has to call again the `computeEqualHeightRows`
+			// function.
 
-			// There is nothing to implement here: it merely consists on carrying
-			// on again the step 2 to equalise the computed height of all '*' rows
-			// (in case that some of them had been changed during the processing
-			// of multi-row slots).
+			// 6. Compute Single-Row Slots
+			// ---------------------------
+			// So far, we have computed the height of multi-row slots,
+			// but a final step must yet be done: it is necessary to
+			// assign to every single-row slot (those that span exactly
+			// one row) the height of its row.
+
+			var computeSingleRowSlots = function() {
+				var i, j, slots;
+
+				logger.group('Computing single-row slots...');
+
+				// For each row in the template
+				for (i = 0; i < rows.length; i++) {
+					slots = template.getSlotsOfRow(i);
+					// For each slot in this which `slot.colspan` is 1
+					for (j = 0; j < slots.length; j++) {
+						if (slots[j].rowspan === 1) {
+							slots[j].computedHeight = rows[i].computedHeight;
+							info('Computed height of slot %s has been set to %d pixels ',
+									slots[j].name, slots[j].computedHeight);
+						}
+					}
+				}
+
+				info('Every single-row slot has been set to the height of its row');
+
+				logger.groupEnd();
+			};
+
+			// 7. Computing the Height of the Template Itself
+			// ----------------------------------------------
+
+			var computeTemplateHeight = function() {
+				info('Computing the height of the template itself...');
+				for (var i = 0; i < rows.length; i++) {
+					templateHeight = templateHeight + rows[i].computedHeight;
+				}
+				info('The template has been set a height of %d pixels', templateHeight);
+				template.computedHeight = templateHeight;
+			};
+
+
 
 			// The Height Algorithm
 			// --------------------
 
 			logger.group('Computing the heights of template %d...', template.getId());
 
-			computeSingleRowSlots();
+			computeLengthRows();
+			computeMinimumHeights();
 			computeEqualHeightRows();
 			computeMultiRowSlots();
+			computeEqualHeightRows();
 			computeSingleRowSlots();
-
-			for (i = 0; i < rows.length; i++) {
-				templateHeight = templateHeight + rows[i].computedHeight;
-			}
-			template.computedHeight = templateHeight;
+			computeTemplateHeight();
 
 			logger.groupEnd();
 
@@ -546,6 +688,8 @@ ALMCSS.template.sizing = function () {
 			for (var i = 0; i < templates.length; i++) {
 				computeTemplateHeights(templates[i]);
 			}
+
+			logger.info('All done!');
 
 			logger.groupEnd();
 		};

@@ -144,7 +144,16 @@ ALMCSS.template = function() {
 		return this.intrinsicPreferredWidth;
 	};
 
-	Slot.prototype.getContentHeight = function(width) {
+	// Returns the height in pixels of the contents of this slot. Note that
+	// the height of any HTML element is obviously dependant on its width.
+	// Therefore, this method requires that a _computed width_ has been set
+	// for this slot.
+	//
+	// The value returned by this method is always a number representing the
+	// height of the content of this slot _in pixels_. That is, the height
+	// that should have the slots for its content not to overflow.
+
+	Slot.prototype.getContentHeight = function() {
 
 		var contentHeight = ALMCSS.domUtils.computeContentHeight;
 
@@ -155,7 +164,7 @@ ALMCSS.template = function() {
 		assert(this.computedWidth !== undefined, 'For computing the height of ' +
 			'a slot first it is needed to have set its computed width');
 
-		return contentHeight(this.htmlElement, width);
+		return contentHeight(this.htmlElement, this.computedWidth);
 	};
 
 	Slot.prototype.valueOf = function() {
@@ -284,12 +293,16 @@ ALMCSS.template = function() {
 	Height.auto = new Height('auto');
 	Height.equal = new Height('*');
 
+	Height.prototype.isLength = function() {
+		return this.value instanceof Length;
+	};
+
 	Height.prototype.valueOf = function() {
 		return this.value;
 	};
 
 	Height.prototype.toString = function() {
-		return this.valueOf();
+		return this.value.toString();
 	};
 
 	// Width
@@ -307,7 +320,7 @@ ALMCSS.template = function() {
 	Width.fitContent = new Width('fit-content');
 
 	Width.prototype.isLength = function() {
-		return false;
+		return this.value instanceof Length;
 	};
 
 	Width.prototype.valueOf = function() {
@@ -489,7 +502,7 @@ ALMCSS.template = function() {
             getComputedWidth: function() {
                 assert(this.computedWidth !== undefined, 'The computed width for this ' +
                     'column has not yet been set (this method can not be called before ' +
-                    'the template has performed de sizing algorithm)');
+                    'the template has performed the layout algorithm)');
                 return this.computedWidth;
             },
             setComputedWidth: function(width) {
@@ -554,7 +567,7 @@ ALMCSS.template = function() {
 
 	var Template = function(templateId, rows, columnWidths, slots, selectorText, cssText) {
 
-        var sizing = ALMCSS.template.sizing;
+        var sizing = ALMCSS.template.layout;
 
         // An array of `Column` objects
         var columns = [],
@@ -620,6 +633,9 @@ ALMCSS.template = function() {
 			},
 			howManySlots: function() {
 				return slots.size();
+			},
+			getRow: function(rowIndex) {
+				return rows[rowIndex];
 			},
 			getRows: function() {
 				return rows;

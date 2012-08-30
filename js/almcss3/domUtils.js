@@ -115,12 +115,16 @@ ALMCSS.domUtils = function() {
 
 
 
-	// Height
-	// ------
+	// Content Height of an Element
+	// ----------------------------
 
 	// Returns the height of an HTML element for a given width. It is used
 	// for computing the height of the slots once all the width computations
-	// have finished.
+	// have finished. Note that this function has the secondary effect of
+	// setting the value of the `element` `style.width` property to the
+	// specified `width`.
+	//
+	// __Can this be done without changing its width?__
 
 	var computeContentHeight = function(element, width) {
 		var result;
@@ -128,6 +132,8 @@ ALMCSS.domUtils = function() {
 		result = getComputedHeight(element);
 		return result;
 	};
+
+
 
 	// Public Functions Exported by This Module
 	// ----------------------------------------

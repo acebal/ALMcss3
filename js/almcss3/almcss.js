@@ -126,8 +126,8 @@ var ALMCSS = function() {
 			createTemplateElements = ALMCSS.template.dom.createTemplateElements,
 			positionedElements = ALMCSS.template.positionedElements,
 			moveElementsIntoSlots = ALMCSS.template.dom.moveElementsIntoSlots,
-			computeWidths = ALMCSS.template.sizing.computeWidths,
-			computeHeights = ALMCSS.template.sizing.computeHeights,
+			computeWidths = ALMCSS.template.layout.computeWidths,
+			computeHeights = ALMCSS.template.layout.computeHeights,
 			paint = ALMCSS.template.dom.paint,
 			i;
 
@@ -178,7 +178,7 @@ var ALMCSS = function() {
 										// computed widths and heights and that sort of things.
 
 			'template/template.js',
-			'template/sizing.js',
+			'template/layout.js',
 			'template/dom.js'
 		], init);
 	};
