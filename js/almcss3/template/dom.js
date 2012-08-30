@@ -43,6 +43,7 @@ ALMCSS.template.dom = function() {
 		}
 	};
 
+	/*
 	var createTemplateElement = function(template) {
 		var templateElement, templateLabel;
 		// __Currently, it is assumed that templates are defined using a single selector per CSS rule.__
@@ -65,8 +66,23 @@ ALMCSS.template.dom = function() {
 		// Create the slots.
 		createSlotElements(template);
 	};
+	*/
 
-	/*
+	var reset = function(template) {
+		var slotsIterator, slot;
+		slotsIterator = template.iterator();
+		while (slotsIterator.hasNext()) {
+			slot = slotsIterator.next();
+			slot.htmlElement.style.left = 'auto';
+			slot.htmlElement.style.top = 'auto';
+			slot.htmlElement.style.position = 'static';
+			slot.htmlElement.style.width = 'auto';
+			slot.htmlElement.style.height = 'auto';
+		}
+		template.htmlElement.style.width = 'auto';
+		template.htmlElement.style.height = 'auto';
+	};
+
 	var createTemplateElement = function(template) {
 		var templateElement, templateLabel;
 		templateElement = document.createElement('div');
@@ -87,11 +103,10 @@ ALMCSS.template.dom = function() {
 		// The DOM HTMLElement also stores a reference to the template it belongs.
 		containerElement.template = template;
 		// And, of course, the template stores a reference to the HTMLElement created.
-		template.htmlElement = htmlElement;
+		template.htmlElement = templateElement;
 		// Create the slots.
 		createSlotElements(template);
 	};
-	*/
 
 	var createTemplateElements = function(templates) {
 		var i;
@@ -190,7 +205,8 @@ ALMCSS.template.dom = function() {
 	return {
 		createTemplateElements: createTemplateElements,
 		moveElementsIntoSlots: moveElementsIntoSlots,
-		paint: paint
+		paint: paint,
+		reset: reset
 	};
 
 }();

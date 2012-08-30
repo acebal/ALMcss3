@@ -659,18 +659,26 @@ ALMCSS.template = function() {
             computeWidths: function() {
                 assert(this.htmlElement, 'computeWidths can not be called before ' +
                     'having created the associated DOM elements for the template');
-                info('Computing widths for template ' + templateId);
-                log('First, column objects must be created for this template...');
-                createColumns(this.htmlElement);
-                log('OK, they have been created:\n' + columns);
-                log('Now, computing the widths...');
+	            info('Computing widths for template ' + templateId);
+	            if (!columns.length) {
+		            log('First, column objects must be created for this template...');
+		            createColumns(this.htmlElement);
+		            log('OK, they have been created:\n' + columns);
+		            log('Now, compute the widths...');
+	            } else {
+		            warn('htmlElement: ', this.htmlElement);
+					ALMCSS.template.dom.reset(this);
+	            }
                 this.computedWidths = sizing.computeTemplateWidths(this);
 	            // TODO: Review and refactor this code (it probably shouldn't be here)
 	            var templateWidth = 0, i;
 	            for (i = 0; i < this.computedWidths.length; i++) {
 		            templateWidth = templateWidth + this.computedWidths[i];
 	            }
+	            warn('htmlElement: ', this.htmlElement);
 	            this.computedWidth = templateWidth;
+	            warn('htmlElement: ', this.htmlElement);
+	            warn('computedWidth: ', this.computedWidth);
             }
 		};
 

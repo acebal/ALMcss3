@@ -135,6 +135,19 @@ ALMCSS.domUtils = function() {
 
 
 
+	// Add Event
+	// ---------
+
+	var addEvent = function(obj, event, whenDone) {
+		if (obj && obj.addEventListener) { // W3C
+			obj.addEventListener(event, whenDone, false);
+		} else if (obj && obj.attachEvent) { // Older IE
+			obj.attachEvent("on" + event, whenDone);
+		}
+	};
+
+
+
 	// Public Functions Exported by This Module
 	// ----------------------------------------
 
@@ -144,7 +157,8 @@ ALMCSS.domUtils = function() {
 		lengthToPixels: lengthToPixels,
 		computeIntrinsicPreferredWidth: computeIntrinsicPreferredWidth,
 		computeIntrinsicMinimumWidth: computeIntrinsicMinimumWidth,
-		computeContentHeight: computeContentHeight
+		computeContentHeight: computeContentHeight,
+		addEvent: addEvent
 	};
 
 }();

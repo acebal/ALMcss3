@@ -274,7 +274,7 @@ ALMCSS.template.layout = function () {
 			info('(Currently, all templates are computed as is they had an a-priori width)');
 
 			var columns, element, elementWidth, sumOfIntrinsicMinimumWidths,
-				computedWidths = [], i;
+				sumOfCurrentComputedWidths, computedWidths = [], i;
 
 			assert(template.getColumns(), 'Columns must have been created before computing the width');
 
@@ -474,8 +474,8 @@ ALMCSS.template.layout = function () {
 					}
 					info('Computed height of row %d has been set to %d ' +
 						'(the height of its taller single-row slot: %s)',
-						i, slotHeight, largestSlot.name);
-					rows[i].computedHeight = slotHeight;
+						i, rowHeight, largestSlot.name);
+					rows[i].computedHeight = rowHeight;
 
 					// Once the row has been set a computed height equal to
 					// the content height of its tallest slot that spans
@@ -568,7 +568,7 @@ ALMCSS.template.layout = function () {
 							startRow, endRow);
 
 				for (i = startRow; i < endRow + 1; i++) {
-					log('Computed height of row %d is %d pixels', rows[i].computedHeight);
+					log('Computed height of row %d is %d pixels', i, rows[i].computedHeight);
 					result = result + rows[i].computedHeight;
 				}
 
@@ -649,7 +649,7 @@ ALMCSS.template.layout = function () {
 				var slot, slotHeight, sumOfComputedHeightOfRows,
 					excessOfHeight, slotsIterator = template.iterator();
 
-				logger.group('Step 3: Computing the height of multi-row slots...');
+				logger.group('Computing the height of multi-row slots...');
 
 				while (slotsIterator.hasNext()) {
 					slot = slotsIterator.next();
@@ -766,11 +766,12 @@ ALMCSS.template.layout = function () {
 			// ----------------------------------------------
 
 			var computeTemplateHeight = function() {
-				info('Computing the height of the template itself...');
+				logger.group('Computing the height of the template itself...');
 				for (var i = 0; i < rows.length; i++) {
 					templateHeight = templateHeight + rows[i].computedHeight;
 				}
 				info('The template has been set a height of %d pixels', templateHeight);
+				logger.groupEnd();
 				template.computedHeight = templateHeight;
 			};
 
@@ -789,6 +790,7 @@ ALMCSS.template.layout = function () {
 			computeSingleRowSlots();
 			computeTemplateHeight();
 
+			log('Template %d finished', template.getId());
 			logger.groupEnd();
 
 		};

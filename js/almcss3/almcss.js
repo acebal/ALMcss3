@@ -113,22 +113,40 @@ var ALMCSS = function() {
 
 	}(basePath);
 
+
+	// The Full Layout Process
+	// -----------------------
+
+	var doLayout = function() {
+
+		var	templates = ALMCSS.template.templates,
+			computeWidths = ALMCSS.template.layout.computeWidths,
+			computeHeights = ALMCSS.template.layout.computeHeights,
+			paint = ALMCSS.template.dom.paint,
+			LoggerLevel = ALMCSS.debug.LoggerLevel,
+			logger = ALMCSS.debug.getLogger('Layout', LoggerLevel.all);
+
+		logger.group('Starting layout...');
+		computeWidths(templates);
+		computeHeights(templates);
+		paint(templates);
+		logger.groupEnd();
+
+	};
+
 	// Main Function
 	// -------------
 	var init = function() {
 
-		var LoggerLevel = ALMCSS.debug.LoggerLevel,
+		var templates = ALMCSS.template.templates,
+			createTemplateElements = ALMCSS.template.dom.createTemplateElements,
+			positionedElements = ALMCSS.template.positionedElements,
+			moveElementsIntoSlots = ALMCSS.template.dom.moveElementsIntoSlots,
+			LoggerLevel = ALMCSS.debug.LoggerLevel,
 			logger = ALMCSS.debug.getLogger('ALMCSS3 Main Function', LoggerLevel.all),
 			parser = ALMCSS.stylesheet.parser.Parser,
 			log = logger.log,
 			info = logger.info,
-			templates = ALMCSS.template.templates,
-			createTemplateElements = ALMCSS.template.dom.createTemplateElements,
-			positionedElements = ALMCSS.template.positionedElements,
-			moveElementsIntoSlots = ALMCSS.template.dom.moveElementsIntoSlots,
-			computeWidths = ALMCSS.template.layout.computeWidths,
-			computeHeights = ALMCSS.template.layout.computeHeights,
-			paint = ALMCSS.template.dom.paint,
 			i;
 
 		info('Starting the main function of ALMCSS3...');
@@ -146,14 +164,9 @@ var ALMCSS = function() {
 			info('No templates were found');
 		}
 
-		// The Full Process
-		// ----------------
-
 		createTemplateElements(templates);
 		moveElementsIntoSlots(positionedElements);
-		computeWidths(templates);
-		computeHeights(templates);
-		paint(templates);
+		doLayout();
 	};
 
 	// Loading Modules
@@ -183,18 +196,27 @@ var ALMCSS = function() {
 		], init);
 	};
 
-	var setOnloadEvent = function(start) {
-		var obj = window, event = 'load';
+
+	// Events
+	// ------
+
+	var addEvent = function(obj, event, whenDone) {
 		if (obj && obj.addEventListener) { // W3C
-			obj.addEventListener(event, start, false);
+			obj.addEventListener(event, whenDone, false);
 		} else if (obj && obj.attachEvent) { // Older IE
-			obj.attachEvent("on" + event, start);
-		} else {
-			throw new AlmcssError('The load event could not be added');
+			obj.attachEvent("on" + event, whenDone);
 		}
 	};
 
-	setOnloadEvent(loadModules);
+	var resizeTimer;
+
+	var whenResize = function() {
+		clearTimeout(resizeTimer);
+		resizeTimer = setTimeout(doLayout, 30);
+	};
+
+	addEvent(window, 'load', loadModules);
+	addEvent(window, 'resize', whenResize);
 
 	return {
 		AlmcssError: AlmcssError,
