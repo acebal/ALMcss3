@@ -408,7 +408,7 @@ ALMCSS.template = function() {
 
 		var computeIntrinsicMinimumAndIntrinsicPreferredWidths = function() {
 
-            info('Computing the intrinsic minimum and preferred widths from column: ' + index +
+            info('Computing the intrinsic minimum and preferred widths for column ' + index +
                 ' (' + columnWidth + ')');
 
             var lengthToPixels = ALMCSS.domUtils.lengthToPixels;

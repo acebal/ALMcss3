@@ -60,7 +60,116 @@ ALMCSS.template.layout = function () {
 		// TODO: Resolve this questions with Bert.
 		//
 
-		var wideColumns = function (elementWidth, columns) {
+		// Widening Columns (current algorithm)
+		// ----------------
+
+		var wideColumns2 = function (elementWidth, columns) {
+
+			var i, step, numberOfColumns, amount, areAllWidened = false,
+				intrinsicPreferredWidth, nonExpandableColumns, computedWidths,
+				availableWidth, message;
+
+			nonExpandableColumns = [];
+			computedWidths = [];
+
+			var isExpandableColumn = function (column) {
+				for (var i = 0; i < nonExpandableColumns.length; i++) {
+					if (nonExpandableColumns[i] === column) {
+						return false;
+					}
+				}
+				return true;
+			};
+
+			var isThereAvailableWidth = function() {
+				return availableWidth > 1;
+			};
+
+			numberOfColumns = columns.length;
+			step = 1;
+			availableWidth = elementWidth;
+
+			for (i = 0; i < columns.length; i++) {
+				computedWidths[i] = columns[i].getIntrinsicMinimumWidth();
+			}
+
+			while (isThereAvailableWidth() && !areAllWidened) {
+
+				assert(step < 30, 'Oops, something had to went wrong: too many steps');
+				amount = availableWidth / numberOfColumns;
+				logger.group('Step %d: Widening columns with an increment of %d pixels...',
+					step, amount);
+
+				// All columns are processed in each iteration.
+				for (i = 0; i < columns.length; i++) {
+
+					// If the column is not expandable (it has already reached its
+					// intrinsic preferred width), there is nothing to do with it:
+					// the widening process continues with the following one, if
+					// there are left columns to be iterated in this step.
+					if (!isExpandableColumn(columns[i])) {
+						continue;
+					}
+
+					// Otherwise (the column may be widened), its intrinsic
+					// preferred width is obtained
+					intrinsicPreferredWidth = columns[i].getIntrinsicPreferredWidth();
+
+					// __No column can be wider than its preferred minimum width__.
+					// If the column that is being currently processed can not
+					// expand by the previously computed `amount` without
+					// violating that constraint, then it is set to its
+					// _preferred minimum width_. Note that the difference
+					// between both values (`computedWidths[i] + amount` and
+					// `intrinsicPreferredWidth`) would have to be
+					// redistributed in subsequent iterations among the rest of
+					// the columns that may still be widen.
+
+					if (computedWidths[i] + amount > intrinsicPreferredWidth) {
+						computedWidths[i] = intrinsicPreferredWidth;
+						nonExpandableColumns.push(columns[i]);
+						info('Column ' + i + ' has been set to its intrinsic preferred width ' +
+							'and is not more expandable');
+					}
+
+					// If the sum of the column width (`computedWidths[i]`)
+					// plus the `amount` to be added in this step (remind:
+					// the result of dividing the available width into the
+					// number of expandable columns that was previously
+					// calculated) _is less than or equal to the intrinsic
+					// preferred width_ of the column that is being processed,
+					// that would be the new computed width of this column.
+					else {
+						computedWidths[i] = computedWidths[i] + amount;
+						log('Column %d has been set a width of %d pixels', i, computedWidths[i]);
+					}
+
+					availableWidth = availableWidth - computedWidths[i];
+				}
+				if (!isThereAvailableWidth()) {
+					log('There is no more available width');
+				} else {
+					log('After step %d, there are still %d pixels of available width', step, availableWidth);
+					if (nonExpandableColumns.length === columns.length) {
+						areAllWidened = true;
+						log('But all columns have already be widened up to their maximum: we have to end');
+					} else {
+						numberOfColumns = columns.length - nonExpandableColumns.length;
+						message = numberOfColumns === 1 ? 'is' : 'are';
+						log('There %s still %d columns that can be widened', message, numberOfColumns);
+					}
+				}
+				step = step + 1;
+				logger.groupEnd();
+			}
+			info('All columns have been widened: ' + computedWidths);
+			return computedWidths;
+		};
+
+		// Widening Columns (old algorithm)
+		// ----------------
+
+		var wideColumns1 = function (elementWidth, columns) {
 
 			var i, step, numberOfColumns, columnWidth, areAllWidened = false,
 				intrinsicPreferredWidth, nonExpandableColumns, computedWidths,
@@ -157,6 +266,8 @@ ALMCSS.template.layout = function () {
 			info('All columns have been widened: ' + computedWidths);
 			return computedWidths;
 		};
+
+		var wideColumns = wideColumns2;
 
 		var computeColumnWidths = function (template) {
 			logger.group('Computing the width of the template ' + template.getId() + '...');
