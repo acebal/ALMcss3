@@ -50,11 +50,12 @@ ALMCSS.template.layout = function () {
 		// language is always assumed.
 		//
 		// But some clarifications need yet to be done:
-		// - What does it happen with equal-width columns? The specification does
+		// - <del>What does it happen with equal-width columns? The specification does
 		//   not say anything about the constraint that they impose on the layout
-		//   algorithm for computing the widths.
+		//   algorithm for computing the widths.</del>
 		// - What does _span of columns_ mean in this context?
 		// - What "element" is exactly referring the specification to?
+		// - __What does "all columns get the same width" mean?__
 		//
 		// TODO: Resolve this questions with Bert.
 		//
