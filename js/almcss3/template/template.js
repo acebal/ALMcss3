@@ -656,6 +656,28 @@ ALMCSS.template = function() {
 				}
 				return result;
 			},
+			doLayout: function() {
+				logger.group('Doing layout for this template: %s...', templateId);
+
+				assert(this.htmlElement, 'The layout can not be start before ' +
+					'having created the associated DOM elements for the template');
+				info('Computing widths for template ' + templateId);
+				if (!columns.length) {
+					log('First, column objects must be created for this template...');
+					createColumns(this.htmlElement);
+					log('OK, they have been created:\n' + columns);
+					log('Now, the layout...');
+				}
+
+				this.computedWidths = ALMCSS.template.layout.computeTemplateWidths(this);
+				ALMCSS.template.layout.computeTemplateHeights(this);
+				ALMCSS.template.dom.paint(this);
+
+				info('The layout of template %s has finished', templateId);
+				logger.groupEnd();
+
+			},
+
             computeWidths: function() {
                 assert(this.htmlElement, 'computeWidths can not be called before ' +
                     'having created the associated DOM elements for the template');
@@ -696,7 +718,8 @@ ALMCSS.template = function() {
 			numberOfRows = rows.length,
 			numberOfColumns = 0,
 			slots = new Slots(),
-			templateId = ALMCSS.Config.TEMPLATE_ID + templates.length + 1,
+			numberOfcreatedTemplates = templates.length + 1,
+			templateId = ALMCSS.Config.TEMPLATE_ID + numberOfcreatedTemplates,
 			slotId;
 
 		var computerNumberOfColumns = function() {

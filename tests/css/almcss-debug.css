@@ -1,9 +1,9 @@
 .almcss-template {
-    border: 10px solid green;
+    border: 10px solid rgb(135, 184, 0);
 }
 
 .almcss-slot {
-    border: 2px solid blue;
+    border: 5px solid blue;
 }
 
 .almcss-template-label {

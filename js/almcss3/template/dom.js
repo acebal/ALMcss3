@@ -104,6 +104,8 @@ ALMCSS.template.dom = function() {
 		containerElement.template = template;
 		// And, of course, the template stores a reference to the HTMLElement created.
 		template.htmlElement = templateElement;
+		// And to the container element.
+		template.containerElement = containerElement;
 		// Create the slots.
 		createSlotElements(template);
 	};
@@ -196,16 +198,18 @@ ALMCSS.template.dom = function() {
 
 	};
 
+	/*
 	var paint = function (templates) {
 		for (var i = 0; i < templates.length; i++) {
 			paintTemplate(templates[i]);
 		}
 	};
+	*/
 
 	return {
 		createTemplateElements: createTemplateElements,
 		moveElementsIntoSlots: moveElementsIntoSlots,
-		paint: paint,
+		paint: paintTemplate,
 		reset: reset
 	};
 

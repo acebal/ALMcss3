@@ -279,7 +279,9 @@ ALMCSS.template.layout = function () {
 			assert(template.getColumns(), 'Columns must have been created before computing the width');
 
 			columns = template.getColumns();
-			element = template.htmlElement;
+			//element = template.htmlElement;
+			element = template.containerElement;
+
 
 			elementWidth = getComputedWidth(element);
 			sumOfIntrinsicMinimumWidths = sumIntrinsicMinimumWidths(columns);
@@ -365,8 +367,9 @@ ALMCSS.template.layout = function () {
 		};
 
 		return {
-			computeTemplateWidths: computeTemplateWidths,
-			computeWidths: computeWidths
+			//computeTemplateWidths: computeTemplateWidths,
+			//computeWidths: computeWidths
+			computeTemplateWidths: computeTemplateWidths
 		};
 
 	}();
@@ -683,11 +686,11 @@ ALMCSS.template.layout = function () {
 					// height of its rows.
 
 					sumOfComputedHeightOfRows = sumComputedHeightOfRowspan(
-						slot.startRow, slot.rowspan - 1);
+						slot.startRow, slot.endRow());
 					if (slotHeight < sumOfComputedHeightOfRows) {
 						info('The content height of slot %s (%d) is less than ' +
 							'the sum of the height of the rows it spans (%d): ' +
-							'it is changed to tha value', slot.name, slotHeight,
+							'it is changed to that value', slot.name, slotHeight,
 							sumOfComputedHeightOfRows);
 						slot.computedHeight = sumOfComputedHeightOfRows;
 						continue;
@@ -713,7 +716,7 @@ ALMCSS.template.layout = function () {
 						'pixels): rows need to be enlarged',
 						excessOfHeight, slot.name, slotHeight, sumOfComputedHeightOfRows);
 
-					distributeExcessOfHeightAmongRows(excessOfHeight, slot.startRow, slot.rowspan - 1);
+					distributeExcessOfHeightAmongRows(excessOfHeight, slot.startRow, slot.endRow());
 
 				}
 
@@ -790,7 +793,7 @@ ALMCSS.template.layout = function () {
 			computeSingleRowSlots();
 			computeTemplateHeight();
 
-			log('Template %d finished', template.getId());
+			log('Computing heights of template %d finished', template.getId());
 			logger.groupEnd();
 
 		};
@@ -809,6 +812,7 @@ ALMCSS.template.layout = function () {
 		};
 
 		return {
+			computeTemplateHeights: computeTemplateHeights,
 			computeHeights: computeHeights
 		};
 
@@ -816,9 +820,9 @@ ALMCSS.template.layout = function () {
 
 	return {
 		computeTemplateWidths: WidthAlgorithm.computeTemplateWidths,
-		computeWidths: WidthAlgorithm.computeWidths,
-		computeTemplateWidth: WidthAlgorithm.computeTemplateWidth,
-		computeHeights: HeightAlgorithm.computeHeights
+		//computeWidths: WidthAlgorithm.computeWidths,
+		computeTemplateHeights: HeightAlgorithm.computeTemplateHeights,
+		//computeHeights: HeightAlgorithm.computeHeights
 	};
 
 }();

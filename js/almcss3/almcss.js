@@ -120,16 +120,27 @@ var ALMCSS = function() {
 	var doLayout = function() {
 
 		var	templates = ALMCSS.template.templates,
-			computeWidths = ALMCSS.template.layout.computeWidths,
-			computeHeights = ALMCSS.template.layout.computeHeights,
+			computeWidths = ALMCSS.template.layout.computeTemplateWidths,
+			computeHeights = ALMCSS.template.layout.computeTemplateHeights,
 			paint = ALMCSS.template.dom.paint,
 			LoggerLevel = ALMCSS.debug.LoggerLevel,
 			logger = ALMCSS.debug.getLogger('Layout', LoggerLevel.all);
 
+		var i;
+
 		logger.group('Starting layout...');
-		computeWidths(templates);
-		computeHeights(templates);
-		paint(templates);
+		for (i = 0; i < templates.length; i++) {
+			templates[i].doLayout();
+			/*
+			logger.group('Layout of template ' + templates[i].getId());
+			computeWidths(templates[i]);
+			computeHeights(templates[i]);
+			paint(templates[i]);
+			logger.info('Template %s finished', templates[i].getId());
+			logger.groupEnd();
+			*/
+		}
+		logger.info('All done!');
 		logger.groupEnd();
 
 	};
