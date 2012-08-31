@@ -493,10 +493,29 @@ ALMCSS.stylesheet.parser = function() {
 
 		var input;
         var position = 0;
+		var lastPosition = 0;
         var currentChar;
         var currentSpelling = '';
 
-        var nextChar = function() {
+		var inputAt = function(position) {
+			var startPosition = position - 1,
+				endPosition,
+				endLine;
+
+			endLine = input.indexOf('\n', position);
+			endPosition = endLine ? endLine : input.length;
+			return input.substring(startPosition, endPosition) + ' [...]';
+		};
+
+		var currentInput = function() {
+			return inputAt(position);
+		};
+
+		var lastInput = function() {
+			return inputAt(lastPosition);
+		};
+
+		var nextChar = function() {
             if (position < input.length) {
                 currentChar = input.charAt(position);
                 currentSpelling = currentSpelling + currentChar;
@@ -1048,22 +1067,13 @@ ALMCSS.stylesheet.parser = function() {
 			return result;
 		};
 
-		var currentInput = function() {
-			var startPosition = position - 1,
-				endPosition,
-				endLine;
-
-			endLine = input.indexOf('\n', position);
-			endPosition = endLine ? endLine : input.length;
-			return input.substring(startPosition, endPosition) + ' [...]';
-		};
-
 		var nextToken = function() {
 
 			var previousChar;
 
 			log('nextToken has been called, current input is: ' + currentInput());
 			currentSpelling = currentChar;
+			lastPosition = position;
 
 			// EOF
 			if (currentChar === EOF) {
@@ -1202,7 +1212,9 @@ ALMCSS.stylesheet.parser = function() {
 
 		return {
 			init: init,
-			nextToken: nextToken
+			nextToken: nextToken,
+			currentInput: currentInput,
+			lastInput: lastInput
 		};
 
 	}();
@@ -1719,7 +1731,8 @@ ALMCSS.stylesheet.parser = function() {
 				rule.addDeclaration(declaration);
 
 			} catch (e) {
-				error('A error was found parsing a declaration: it is omitted');
+				error('A error was found parsing a declaration: it is omitted:\n%s',
+						lexer.lastInput());
 				while (currentToken !== Token.EOF) {
 					if (currentToken === Token.SEMICOLON ||
 						currentToken === Token.RBRACE) {
@@ -1751,10 +1764,21 @@ ALMCSS.stylesheet.parser = function() {
 		// rule must be ignored, according to the CSS Specification.
 
 		var omitRule = function() {
-			nextToken();
+			var message = '';
+			logger.group('Skipping the whole rule...');
 			while (currentToken !== Token.EOF && currentToken !== Token.RBRACE) {
-				nextToken();
+				if (currentToken === Token.S) {
+					parseWhitespace();
+					message = message + ' ';
+				} else {
+					message = message + currentToken.lexeme;
+					nextToken();
+				}
 			}
+			message = message + currentToken.lexeme;
+			log('The rule has been ignored: ' + message);
+			logger.groupEnd();
+			nextToken();
 		};
 
 		var parseRule = function() {
@@ -1785,8 +1809,9 @@ ALMCSS.stylesheet.parser = function() {
 					parseWhitespace();
 					ruleSet.push(parseRule());
 				} catch (e) {
-					error('An invalid selector was found: the rule is omitted (current token = %s)',
-						currentToken.toString());
+					error('An invalid selector was found: the rule is omitted ' +
+						'(current token = %s):\n%s',
+						currentToken.toString(), lexer.lastInput());
 					omitRule();
 				}
 			}

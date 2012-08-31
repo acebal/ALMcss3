@@ -166,10 +166,9 @@ var ALMCSS = function() {
 		if (templates.length) {
 			info(templates.length + ' templates were found:\n');
 			for (i = 0; i < templates.length; i++) {
+				logger.group('Template %d:', i);
 				info(templates[i] + '\n');
-				if (i < templates.length - 1) {
-					info('---------------------------\n');
-				}
+				logger.groupEnd();
 			}
 		} else {
 			info('No templates were found');
@@ -188,6 +187,7 @@ var ALMCSS = function() {
 		var include = module.include;
 
 		include([
+			//'../../lib/firebug-lite/content/firebug-lite-dev.js',
 			'config.js',                // Global configuration parameters.
 			'debug.js',                 // Assertions and logging.
 

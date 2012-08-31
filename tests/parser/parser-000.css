@@ -1,0 +1,51 @@
+
+
+/* @import "imported1.css"; */
+
+
+/* This is a comment, next rule should be recognised. */
+
+h2 {
+    color: green;
+}
+
+ul {
+    color: red;
+}
+
+@import "imported1.css";
+
+h3 {
+    color: blue;
+}
+
+/* Next is invalid: the whole rule should be omitted. */
+
+100 {
+    color: red;
+}
+
+/* But it should be able to skit the rule and recognise the next one. */
+
+cite{color:blue;}
+
+cite{color:red}
+
+table {
+    color: red;
+    ;
+    background-color: blue;
+    200: invalid;   /* Error: this declaration should be ignored. */
+    color: green;   /* But this one should be recognised. */
+}
+
+/* This is a comment */
+
+body {
+    display: "a"
+             "b";
+}
+
+h1  { position: b; }
+p   { position: a; }
+
