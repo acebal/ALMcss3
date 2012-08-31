@@ -4,6 +4,7 @@
     <title>ALMCSS Test</title>
     <meta charset=utf-8 />
     <link rel="stylesheet" type="text/css" href="base.css"></link>
+    <link rel="stylesheet" type="text/css" href="../css/almcss-debug.css"></link>
     <link rel="stylesheet" type="text/css" href="parser-000.css"></link>
     <script type="text/javascript" src="../../js/almcss3/almcss.js"></script>
 </head>
@@ -12,5 +13,16 @@
     <p>Currently the parser is very simplistic (not so the lexical analyser): it only recognised rule sets and, from those rules, only <em>display</em> and <em>position</em> properties are syntactically checked and returned in a sort of simplified CSS Object Model.</p>
     <p>However it should be able not only to read any other CSS rule, but also <em>recover</em> both for true CSS errors and for those other parts of the grammar that have not been implemented yet (for example, &ldquo;import&rdquo; rules).</p>
     <p>The HTML files in this folder try to test only that thing: the parser, to check that errors do not force infinite loops and things like that.</p>
+    <div id="examples">
+        <h2>Examples</h2>
+        <div id="first-example" example">
+            <p class="one">This template is wrong.</p>
+            <p class="two">So it should not be recognised.</p>
+        </div>
+        <div id="second-example" class="example">
+            <p class="one">But this is right.</p>
+            <p class="two">And therefore it should be parsed and painted.</p>
+        </div>
+    </div>
 </body>
 </html>

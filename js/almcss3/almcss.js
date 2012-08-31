@@ -145,6 +145,24 @@ var ALMCSS = function() {
 
 	};
 
+	// Events
+	// ------
+
+	var addEvent = function(obj, event, whenDone) {
+		if (obj && obj.addEventListener) { // W3C
+			obj.addEventListener(event, whenDone, false);
+		} else if (obj && obj.attachEvent) { // Older IE
+			obj.attachEvent("on" + event, whenDone);
+		}
+	};
+
+	var resizeTimer;
+
+	var whenResize = function() {
+		clearTimeout(resizeTimer);
+		resizeTimer = setTimeout(doLayout, 30);
+	};
+
 	// Main Function
 	// -------------
 	var init = function() {
@@ -177,6 +195,9 @@ var ALMCSS = function() {
 		createTemplateElements(templates);
 		moveElementsIntoSlots(positionedElements);
 		doLayout();
+
+		addEvent(window, 'resize', whenResize);
+
 	};
 
 	// Loading Modules
@@ -207,27 +228,7 @@ var ALMCSS = function() {
 		], init);
 	};
 
-
-	// Events
-	// ------
-
-	var addEvent = function(obj, event, whenDone) {
-		if (obj && obj.addEventListener) { // W3C
-			obj.addEventListener(event, whenDone, false);
-		} else if (obj && obj.attachEvent) { // Older IE
-			obj.attachEvent("on" + event, whenDone);
-		}
-	};
-
-	var resizeTimer;
-
-	var whenResize = function() {
-		clearTimeout(resizeTimer);
-		resizeTimer = setTimeout(doLayout, 30);
-	};
-
 	addEvent(window, 'load', loadModules);
-	addEvent(window, 'resize', whenResize);
 
 	return {
 		AlmcssError: AlmcssError,

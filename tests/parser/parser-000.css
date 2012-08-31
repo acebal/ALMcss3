@@ -49,3 +49,19 @@ body {
 h1  { position: b; }
 p   { position: a; }
 
+
+#first-example {
+    display: "ab" /)%&77;   /* Invalid template */
+    color: red;
+}
+
+#second-example {
+    display: "ab";   /* But this is right. */
+}
+
+
+#examples .one { position: b; }
+#examples .two { position: a; }
+
+
+
