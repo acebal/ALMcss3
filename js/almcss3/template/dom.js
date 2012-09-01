@@ -190,6 +190,7 @@ ALMCSS.template.dom = function() {
 
 	};
 
+	// http://stackoverflow.com/questions/4969605/javascript-regexp-to-camelcase-a-hyphened-css-property
 	var camelCase = function(s) {
 		return s.replace(/-([a-z])/g, function (g) { return g[1].toUpperCase() });
 	};

@@ -3,7 +3,7 @@ var ALMCSS = ALMCSS || {};
 ALMCSS.Config = {
 
 	DEBUG                   : true,
-	VISUAL_DEBUG            : true,
+	VISUAL_DEBUG            : false,
 
 	ASTERISK                : '*',
 	DEFAULT_SLOT            : '*',
