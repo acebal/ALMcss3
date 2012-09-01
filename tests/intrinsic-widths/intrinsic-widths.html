@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8" />
+	<title>Intrinsic Minimum and Intrinsic Preferred Widths</title>
+	<link rel="stylesheet" href="base.css" type="text/css" />
+	<style>
+		.with-margins td > *, 
+		div.with-margins > * {
+			margin-left: 60px;
+			margin-right: 60px;
+		}
+		
+		.with-paddings td > *,
+		div.with-paddings > * {
+			padding-left: 60px;
+			padding-right: 60px;
+		}
+		
+		.with-all td > *,
+		div.with-all > * {
+			margin-left: 60px;
+			margin-right: 60px;
+			padding-left: 60px;
+			padding-right: 60px;
+			border-left: 20px solid #99B2B7;	
+			border-right: 20px solid #99B2B7;	
+		}
+		
+		.float {
+			float: left;
+		}	
+	</style>
+</head>
+<body>
+	
+	<h1>Intrinsic Minimum and Intrinsic Preferred Widths</h1>
+	
+	<div id="abstract">
+		<p>This is an example document to test how <em>intrinsic minimum</em> and <em>intrinsic preferred</em> widths can be calculated.</p>
+		<p>Specifically, some examples are provided to see how other CSS layout contexts (tables, floats&hellip;) compute their width based on their contents, and how those widths are affected by the presence of horizontal margins and padding, and vertical borders on such content elements.</p>
+	</div>
+	
+	<h2>Examples</h2>
+	
+	<h3>Tables</h3>
+	
+	<table class="example">
+		<tr>
+			<td><p>This is a relatively short paragraph.<p></td>
+		</tr>
+	</table>
+	<table class="example">
+		<tr>
+			<td><p>This is a really long paragraph. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque vestibulum, augue quis lobortis mattis, est mauris placerat dolor, at iaculis tellus est ornare erat. Cras dictum lobortis rutrum. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut gravida ullamcorper ultrices. Maecenas scelerisque rutrum velit, sed tincidunt mi ornare eget. Cras diam tellus, eleifend vitae sodales sit amet, pulvinar lobortis orci. In rhoncus mauris vitae leo mattis tristique.<p></td>
+		</tr>
+	</table>
+	<table class="example">
+		<tr>
+			<td>
+				<p>This is a list:</p>
+				<ul>
+					<li>One</li>
+					<li>Two</li>
+					<li>More elements&hellip;</li>
+				</ul>
+			</td>
+		</tr>
+	</table>
+	
+	<h4>Tables with Margins, Paddings and Borders</h4>
+	
+	<table class="example with-margins">
+		<tr>
+			<td><p>This is a relatively short paragraph.<p></td>
+		</tr>
+	</table>
+
+	<table class="example with-paddings">
+		<tr>
+			<td><p>This is a really long paragraph. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque vestibulum, augue quis lobortis mattis, est mauris placerat dolor, at iaculis tellus est ornare erat. Cras dictum lobortis rutrum. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut gravida ullamcorper ultrices. Maecenas scelerisque rutrum velit, sed tincidunt mi ornare eget. Cras diam tellus, eleifend vitae sodales sit amet, pulvinar lobortis orci. In rhoncus mauris vitae leo mattis tristique.</p></td>
+		</tr>
+	</table>
+
+	<table class="example with-all">
+		<tr>
+			<td>
+				<p>This is a list:</p>
+				<ul>
+					<li>One</li>
+					<li>Two</li>
+					<li>More elements&hellip;</li>
+				</ul>				
+			</td>
+		</tr>
+	</table>
+	
+	<h3>Floats</h3>
+	
+	<div class="example float">
+		<p>This is a relatively short paragraph.</p>
+	</div>
+	<div class="example float">
+		<p>This is a really long paragraph. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque vestibulum, augue quis lobortis mattis, est mauris placerat dolor, at iaculis tellus est ornare erat. Cras dictum lobortis rutrum. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut gravida ullamcorper ultrices. Maecenas scelerisque rutrum velit, sed tincidunt mi ornare eget. Cras diam tellus, eleifend vitae sodales sit amet, pulvinar lobortis orci. In rhoncus mauris vitae leo mattis tristique.</p>
+	</div>
+	<div class="example float">
+		<p>This is a list:</p>
+		<ul>
+			<li>One</li>
+			<li>Two</li>
+			<li>More elements&hellip;</li>
+		</ul>
+	</div>
+	
+	<h4>Floats with Margins, Paddings and Borders</h4>
+
+	<div class="example float with-margins">
+		<p>This is a relatively short paragraph.</p>
+	</div>
+	<div class="example float with-paddings">
+		<p>This is a really long paragraph. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque vestibulum, augue quis lobortis mattis, est mauris placerat dolor, at iaculis tellus est ornare erat. Cras dictum lobortis rutrum. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut gravida ullamcorper ultrices. Maecenas scelerisque rutrum velit, sed tincidunt mi ornare eget. Cras diam tellus, eleifend vitae sodales sit amet, pulvinar lobortis orci. In rhoncus mauris vitae leo mattis tristique.</p>
+	</div>
+	<div class="example float with-all">
+		<p>This is a list:</p>
+		<ul>
+			<li>One</li>
+			<li>Two</li>
+			<li>More elements&hellip;</li>
+		</ul>
+	</div>
+
+	<h3>Divs</h3>
+	
+	<div class="example">
+		<p>This is a relatively short paragraph.</p>
+	</div>
+	<div class="example">
+		<p>This is a really long paragraph. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque vestibulum, augue quis lobortis mattis, est mauris placerat dolor, at iaculis tellus est ornare erat. Cras dictum lobortis rutrum. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut gravida ullamcorper ultrices. Maecenas scelerisque rutrum velit, sed tincidunt mi ornare eget. Cras diam tellus, eleifend vitae sodales sit amet, pulvinar lobortis orci. In rhoncus mauris vitae leo mattis tristique.</p>
+	</div>
+	<div class="example">
+		<p>This is a list:</p>
+		<ul>
+			<li>One</li>
+			<li>Two</li>
+			<li>More elements&hellip;</li>
+		</ul>
+	</div>
+	
+	<h4>Divs with Margins, Paddings and Borders</h4>
+
+	<div class="example with-margins">
+		<p>This is a relatively short paragraph.</p>
+	</div>
+	<div class="example with-paddings">
+		<p>This is a really long paragraph. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque vestibulum, augue quis lobortis mattis, est mauris placerat dolor, at iaculis tellus est ornare erat. Cras dictum lobortis rutrum. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut gravida ullamcorper ultrices. Maecenas scelerisque rutrum velit, sed tincidunt mi ornare eget. Cras diam tellus, eleifend vitae sodales sit amet, pulvinar lobortis orci. In rhoncus mauris vitae leo mattis tristique.</p>
+	</div>
+	<div class="example with-all">
+		<p>This is a list:</p>
+		<ul>
+			<li>One</li>
+			<li>Two</li>
+			<li>More elements&hellip;</li>
+		</ul>
+	</div>
+	
+
+</body>
+</html>

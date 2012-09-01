@@ -1,15 +1,15 @@
 body {
-    /*width: 800px; */
-    display: "aab"
-             "dcb"
-              300px @ @;
+    grid:   300px * *
+            "aab"
+            "dcb";
+
 }
 
-#header     { position: c; }
-#content    { position: a; }
-#footer     { position: b; }
+#header     { flow: c; }
+#content    { flow: a; }
+#footer     { flow: b; }
 
-ul          { position: d; }
+ul          { flow: d; }
 
 body {
     background: #fbf1cd;
@@ -44,7 +44,7 @@ h1 {
 }
 
 .figure {
-    margin: 1.6em auto;
+    margin: 0 auto;
 }
 
 .figure img {

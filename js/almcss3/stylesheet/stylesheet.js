@@ -23,6 +23,11 @@ ALMCSS.stylesheet = function() {
 
 	var cssCache = '';
 
+	var indexOf = function(s, regex, startpos) {
+		var index = s.substring(startpos || 0).search(regex);
+		return (index >= 0) ? (index + (startpos || 0)) : indexOf;
+	};
+
 	var getPath = function() {
 		var result = window.location.href.substr(0, (location.href).lastIndexOf('/') + 1);
 		return result;
@@ -62,13 +67,14 @@ ALMCSS.stylesheet = function() {
 	// element, whereas for external style sheets it should be a LINK element.
 
 	var isInline = function(styleSheet) {
+		var ownerNode = styleSheet.ownerNode || styleSheet.owningElement;
 		if (styleSheet.href) {
-			assert(styleSheet.ownerNode.nodeName.toLowerCase() === 'link',
+			assert(ownerNode.nodeName.toLowerCase() === 'link',
 				'Style sheets object for which the value of their \'href\' property ' +
 				'is not null, are supposed to have \'link\' as their owner node');
 			return false;
 		}
-		assert(styleSheet.ownerNode.nodeName.toLowerCase() === 'style',
+		assert(ownerNode.nodeName.toLowerCase() === 'style',
 			'Style sheets object for which the value of their \'href\' property ' +
 			'is null, are supposed to have \'style\' as their owner node');
 		return true;

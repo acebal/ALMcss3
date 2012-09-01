@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8" />
+	<title>Sizing (Widths and Heights, Floats and Templates)</title>
+	<link rel="stylesheet" href="base.css" type="text/css" />
+	<style>
+		.float {
+			float: left;
+		}
+		
+		.example p {
+			margin-top: 160px;
+			padding-top: 50px;
+		}
+
+		.example ul {
+			margin-bottom: 60px;
+			padding-bottom: 50px;
+		}		
+				
+		.with-margins > * {
+			margin-left: 60px;
+			margin-right: 60px;
+		}
+		
+		.with-paddings > * {
+			padding-left: 60px;
+			padding-right: 60px;
+		}
+		
+		.with-all > * {
+			margin-left: 60px;
+			margin-right: 60px;
+			padding-left: 60px;
+			padding-right: 60px;
+			border-left: 20px solid #99B2B7;	
+			border-right: 20px solid #99B2B7;	
+		}
+		
+	</style>
+    <script type="text/javascript" src="../../js/almcss3/base.js"></script>
+    <script type="text/javascript" src="../../js/almcss3/config.js"></script>
+    <script type="text/javascript" src="../../js/almcss3/debug.js"></script>
+    <script type="text/javascript" src="../../js/almcss3/domUtils.js"></script>
+    <script>
+        function getDimensions(number, element) {
+
+            'use strict';
+
+            var width = ALMCSS.domUtils.getComputedWidth,
+                preferred = ALMCSS.domUtils.computeIntrinsicPreferredWidth,
+                minimum = ALMCSS.domUtils.computeIntrinsicMinimumWidth,
+                height = ALMCSS.domUtils.getComputedHeight;
+
+            console.group('First:');
+            console.info('Current width: ' + width(element));
+            console.info('Preferred width: ' + preferred(element));
+            console.info('Minimum width: ' + minimum(element));
+            console.info('Height: ' + height(element));
+            console.groupEnd();
+        }
+
+        window.onload = function() {
+
+            'use strict';
+
+            var elements = document.querySelectorAll('.example ul');
+            console.group('Dimensions of the ul');
+            for (var i = 0; i < elements.length; i++) {
+                getDimensions(i + 1, elements[i]);
+            }
+            console.groupEnd();
+            console.group('Dimensions of the paragraphs');
+            elements = document.querySelectorAll('.example p');
+            for (i = 0; i < elements.length; i++) {
+                getDimensions(i + 1, elements[i]);
+            }
+            console.group('Dimensions of the container itself (floated)');
+            elements = document.querySelectorAll('.example');
+            for (i = 0; i < elements.length; i++) {
+                getDimensions(i + 1, elements[i]);
+            }
+
+        };
+
+    </script>
+</head>
+<body>
+	
+	<h1>Sizing (Widths and Heights, Floats and Templates)</h1>
+	
+	<div class="abstract">
+		<p>This pages compares the width and heights for the same <code>ul</code> element both using float (what would be its <em>intrinsic preferred width</em>) and templates. Some questions:</p>
+		<ul>
+			<li>Should an element inside a slot use its <em>paddings</em>, <em>borders</em> and, specifically, its <em>margins</em> to compute its widths (both intrinsic <em>preferred</em> and <em>minimum</em> ones)?</li>li>
+			<li>And the height? What about <em>margin collapsing</em> in a template? How should be the computed height of the content of a slot calculated?</li>
+		</ul>
+		<p>It seems that floats take all of this values into consideration, both for width and height. So I have changed the methods of the prototype that computes both values:
+		<ul>
+			<li><code>getComputedWidth</code></li>
+			<li><code>getComputedHeight</code></li>
+		</ul>
+		<p>Both of them in <code>domUtils.js</code>. Those methods are mainly called from other two methods of the same module: <code>computeIntrinsicPreferredWidth</code> and <code>computeIntrinsicMinimumWidth</code>.</p>
+	</div>
+
+	<h2>Examples</h2>
+	
+	<h3>A List</h3>
+	
+	<div id="float-1" class="example float with-all">
+		<p>This is a list:</p>
+		<ul>
+			<li>One</li>
+			<li>Two</li>
+			<li>More elements&hellip;</li>
+		</ul>
+	</div>
+
+	<div id="div-1" class="example with-all">
+		<p>This is a list:</p>
+		<ul>
+			<li>One</li>
+			<li>Two</li>
+			<li>More elements&hellip;</li>
+		</ul>
+	</div>
+
+</body>
+</html>

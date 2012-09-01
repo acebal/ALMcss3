@@ -9,38 +9,78 @@ ALMCSS.domUtils = function() {
 
 	var assert = ALMCSS.debug.assert;
 
-
-
 	// Computed Height and Widths
 	// --------------------------
+	//
+	// The `getComputedWidth` and `getComputedHeight` functions of this module
+	// return the computed value for the `width` and `height` respectively of
+	// a given element. There are several reasons for using these functions
+	// instead of simple calling directly to the `getComputedStyle` function
+	// of the DOM from those places in the code where theses values are needed
+	// (apart from brevity and legibility of the code):
+	//
+	// - First, `getComputedStyle` returns a string that contains both the
+	//   value and the unit. So this functions extract the part of the string
+	//   that is a number, which is what they return, ignoring the unit. Note
+	//   that __they are assuming that it is always pixels__. If it were not
+	//   so, there have been to call to do an extra step to convert it to the
+	//   correct numeric value in pixels for a given length (or percentage).
+	// - More important, these functions take into consideration not only the
+	//   _width_ of the element, but also its related horizontal _margins,
+	//   paddings and borders_ (the specified element is supposed to be part
+	//   of the contents of a slot).
 
-	// This function simply returns the computed value of the `width` property
-	// of CSS for the specified HTML element. The reason for using a function
-	// for that instead of simply calling directly to the `getComputedStyle`
-	// function of the DOM from those places in the code where this value is
-	// needed is not (only) for brevity, but because `getComputedStyle` returns
-	// a string that contains both the value and the unit (we are assuming that
-	// the unit is always pixels). So this function performs the additional
-	// task of extracting the part of the string which is a number and converting
-	// it to a numeric value, which is what it returns.
+
+	var getComputedStyleOf = function(element, property) {
+		var result, stringValue;
+		stringValue = getComputedStyle(element, null).getPropertyValue(property);
+		result = parseInt(stringValue.match(/\d+/), 10);
+		assert(!isNaN(result), "The value of property '" + property + "' is not " +
+			"something can be converted to a number (pixels was expected): " + stringValue);
+		return result;
+	};
+
+	// Returns the computed width of an element, using not only the value
+	// of its _width_ property but also its margins, paddings and borders.
 
 	var getComputedWidth = function(element) {
-		var result;
-		result = getComputedStyle(element, null).getPropertyValue('width');
-		result = parseInt(result.match(/\d+/), 10);
-		assert(!isNaN(result));
-		return result;
+		var width, marginLeft, marginRight, paddingLeft, paddingRight,
+			borderLeft, borderRight;
+
+		width = getComputedStyleOf(element, 'width');
+		marginLeft = getComputedStyleOf(element, 'margin-left');
+		marginRight = getComputedStyleOf(element, 'margin-right');
+		paddingLeft = getComputedStyleOf(element, 'padding-left');
+		paddingRight = getComputedStyleOf(element, 'padding-right');
+		borderLeft = getComputedStyleOf(element, 'border-left-width');
+		borderRight = getComputedStyleOf(element, 'border-right-width');
+		return width + marginLeft + marginRight +
+				paddingLeft + paddingRight + borderLeft + borderRight;
 	};
 
 	// The same function than above, but for the computed height of a given
 	// HTML element.
 
 	var getComputedHeight = function(element) {
-		var result;
-		result = getComputedStyle(element, null).getPropertyValue('height');
-		result = parseInt(result.match(/\d+/), 10);
-		assert(!isNaN(result));
-		return result;
+		var height, marginTop, marginBottom, paddingTop, paddingBottom,
+			borderTop, borderBottom;
+
+		element.style.height = 'auto';
+
+		//element.style.borderTopWidth = '1px';
+		//element.style.borderBottomWidth = '1px';
+		height = getComputedStyleOf(element, 'height');
+		return height;
+		/*
+		marginTop = getComputedStyleOf(element, 'margin-top');
+		marginBottom = getComputedStyleOf(element, 'margin-bottom');
+		paddingTop = getComputedStyleOf(element, 'padding-top');
+		paddingBottom = getComputedStyleOf(element, 'padding-bottom');
+		borderTop = getComputedStyleOf(element, 'border-top-width');
+		borderBottom = getComputedStyleOf(element, 'border-bottom-width');
+		return height + marginTop + marginBottom +
+			paddingTop + paddingBottom + borderTop + borderBottom;
+		*/
 	};
 
 
@@ -70,6 +110,15 @@ ALMCSS.domUtils = function() {
 	// ------------------------------------------------
 
 	var computeIntrinsicPreferredWidth = function(element) {
+		var floatValue, intrinsicPreferredWidth;
+		floatValue = getComputedStyle(element, null).getPropertyValue('float');
+		element.style.cssFloat = 'left';
+		intrinsicPreferredWidth = getComputedWidth(element);
+		element.style.cssFloat = floatValue;
+		return intrinsicPreferredWidth;
+	};
+
+	var computeIntrinsicPreferredWidth2 = function(element) {
 		var intrinsicPreferredWidth;
 		element.style.cssFloat = 'left';
 		intrinsicPreferredWidth = getComputedWidth(element);
@@ -152,6 +201,7 @@ ALMCSS.domUtils = function() {
 	// ----------------------------------------
 
 	return {
+		getComputedStyleOf: getComputedStyleOf,
 		getComputedWidth: getComputedWidth,
 		getComputedHeight: getComputedHeight,
 		lengthToPixels: lengthToPixels,

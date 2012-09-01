@@ -7,6 +7,7 @@ ALMCSS.template.dom = function() {
 	var assert = ALMCSS.debug.assert,
 		LoggerLevel = ALMCSS.debug.LoggerLevel,
 		logger = ALMCSS.debug.getLogger('Template DOM creation', LoggerLevel.all),
+		getComputedStyleOf = ALMCSS.domUtils.getComputedStyleOf,
 		log = logger.log,
 		info = logger.info,
 		warn = logger.warn;
@@ -15,7 +16,29 @@ ALMCSS.template.dom = function() {
 		SLOT_CLASS              = ALMCSS.Config.SLOT_CLASS,
 		TEMPLATE_LABEL_CLASS    = ALMCSS.Config.TEMPLATE_LABEL_CLASS,
 		SLOT_LABEL_CLASS        = ALMCSS.Config.SLOT_LABEL_CLASS,
+		TEMPLATE_COLOR          = ALMCSS.Config.TEMPLATE_COLOR,
+		SLOT_COLOR              = ALMCSS.Config.SLOT_COLOR,
+		TEMPLATE_BORDER_WIDTH   = ALMCSS.Config.TEMPLATE_BORDER_WIDTH,
+		SLOT_BORDER_WIDTH       = ALMCSS.Config.SLOT_BORDER_WIDTH,
 		VISUAL_DEBUG            = ALMCSS.Config.VISUAL_DEBUG;
+
+	var createLabels = function(element, id, className, color) {
+		info("Elements are set to 'position: relative' when they are " +
+			"created: they will be changed to 'absolute' later, " +
+			"during the painting stage");
+		element.style.position = 'relative';
+		var label = document.createElement('span');
+		label.setAttribute('class',className);
+		label.style.backgroundColor = color;
+		label.innerHTML = id;
+		element.appendChild(label);
+	};
+
+	var paintBorders = function(element, color, width) {
+		element.style.borderColor = color;
+		element.style.borderWidth = width;
+		element.style.borderStyle = 'solid';
+	};
 
 	// Creation of Slots and Templates HTML Elements
 	// ---------------------------------------------
@@ -29,44 +52,13 @@ ALMCSS.template.dom = function() {
 			slotElement.setAttribute('id', slot.slotId);
 			slotElement.setAttribute('class', SLOT_CLASS);
 			if (VISUAL_DEBUG) {
-				info("Slots are set to 'position: relative' when they are " +
-					"created: they will be changed to 'absolute' later, " +
-					"during the painting stage");
-				slotElement.style.position = 'relative';
-				slotLabel = document.createElement('span');
-				slotLabel.setAttribute('class', SLOT_LABEL_CLASS);
-				slotLabel.innerHTML = slot.slotId;
-				slotElement.appendChild(slotLabel);
+				createLabels(slotElement, slot.slotId, SLOT_LABEL_CLASS, SLOT_COLOR);
+				paintBorders(slotElement, SLOT_COLOR, SLOT_BORDER_WIDTH);
 			}
 			template.htmlElement.appendChild(slotElement);
 			slot.htmlElement = slotElement;
 		}
 	};
-
-	/*
-	var createTemplateElement = function(template) {
-		var templateElement, templateLabel;
-		// __Currently, it is assumed that templates are defined using a single selector per CSS rule.__
-		var templateElement = document.querySelector(template.getSelectorText());
-		templateElement.setAttribute('id', template.getId());
-		templateElement.setAttribute('class', TEMPLATE_CLASS);
-		if (VISUAL_DEBUG) {
-			templateElement.style.position = 'relative';
-			templateLabel = document.createElement('span');
-			templateLabel.setAttribute('class', TEMPLATE_LABEL_CLASS);
-			templateLabel.innerHTML = template.getId();
-			templateElement.appendChild(templateLabel);
-		}
-		// The HTMLElement object of the DOM __is modified__.
-		templateElement.isTemplate = true;
-		// The DOM HTMLElement also stores a reference to the template it belongs.
-		templateElement.template = template;
-		// And, of course, the template stores a reference to the HTMLElement created.
-		template.htmlElement = templateElement;
-		// Create the slots.
-		createSlotElements(template);
-	};
-	*/
 
 	var reset = function(template) {
 		var slotsIterator, slot;
@@ -90,10 +82,10 @@ ALMCSS.template.dom = function() {
 		templateElement.setAttribute('class', TEMPLATE_CLASS);
 		templateElement.style.position = 'relative';
 		if (VISUAL_DEBUG) {
-			templateLabel = document.createElement('span');
-			templateLabel.setAttribute('class', TEMPLATE_LABEL_CLASS);
-			templateLabel.innerHTML = template.getId();
-			templateElement.appendChild(templateLabel);
+			if (VISUAL_DEBUG) {
+				createLabels(templateElement, template.getId(), TEMPLATE_LABEL_CLASS, TEMPLATE_COLOR);
+				paintBorders(templateElement, TEMPLATE_COLOR, TEMPLATE_BORDER_WIDTH);
+			}
 		}
 		// __Currently, it is assumed that templates are defined using a single selector per CSS rule.__
 		var containerElement = document.querySelector(template.getSelectorText());

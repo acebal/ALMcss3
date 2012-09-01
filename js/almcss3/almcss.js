@@ -11,6 +11,20 @@ var ALMCSS = function() {
 
 	var SCRIPT_NAME = 'almcss.js';
 
+	if (!Object.create) {
+		Object.create = function(o) {
+			var F = function() {};
+			F.prototype = o;
+			return new F();
+		}
+	}
+
+	if (!String.prototype.trim) {
+		String.prototype.trim = function() {
+			return this.replace(/^\s\s*/, '').replace(/\s\s*$/, '');
+		};
+	}
+
 	// AlmcssError
 	// -----------
 	//
@@ -68,7 +82,12 @@ var ALMCSS = function() {
 		var loadedModules = [];
 
 		var isAlreadyLoaded = function(file) {
-			return loadedModules.indexOf(file) !== -1;
+			for (var i = 0; i < loadedModules.length; i++) {
+				if (loadedModules[i] === file) {
+					return true;
+				}
+			}
+			return false;
 		};
 
 		// This function is the responsible of dynamically loading all the specified
@@ -120,9 +139,6 @@ var ALMCSS = function() {
 	var doLayout = function() {
 
 		var	templates = ALMCSS.template.templates,
-			computeWidths = ALMCSS.template.layout.computeTemplateWidths,
-			computeHeights = ALMCSS.template.layout.computeTemplateHeights,
-			paint = ALMCSS.template.dom.paint,
 			LoggerLevel = ALMCSS.debug.LoggerLevel,
 			logger = ALMCSS.debug.getLogger('Layout', LoggerLevel.all);
 
@@ -131,14 +147,6 @@ var ALMCSS = function() {
 		logger.group('Starting layout...');
 		for (i = 0; i < templates.length; i++) {
 			templates[i].doLayout();
-			/*
-			logger.group('Layout of template ' + templates[i].getId());
-			computeWidths(templates[i]);
-			computeHeights(templates[i]);
-			paint(templates[i]);
-			logger.info('Template %s finished', templates[i].getId());
-			logger.groupEnd();
-			*/
 		}
 		logger.info('All done!');
 		logger.groupEnd();
@@ -208,7 +216,6 @@ var ALMCSS = function() {
 		var include = module.include;
 
 		include([
-			//'../../lib/firebug-lite/content/firebug-lite-dev.js',
 			'config.js',                // Global configuration parameters.
 			'debug.js',                 // Assertions and logging.
 

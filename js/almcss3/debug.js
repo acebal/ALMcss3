@@ -127,42 +127,56 @@ ALMCSS.debug = function () {
 
 		return {
 			log: function(object /* , object, object... */) {
-				if (console && isVisible(LoggerLevel.log)) {
-					console.log.apply(console, arguments);
+				if (debug && console && console.log) {
+					if (isVisible(LoggerLevel.log)) {
+						console.log.apply(console, arguments);
+					}
 				}
 			},
 			info: function(object /* , object, object... */) {
-				if (console && isVisible(LoggerLevel.info)) {
-					console.info.apply(console, arguments);
+				if (debug && console && console.info) {
+					if (isVisible(LoggerLevel.info)) {
+						console.info.apply(console, arguments);
+					} else {
+						this.log(arguments);
+					}
 				}
 			},
 			warn: function(object /* , object, object... */) {
-				if (console && isVisible(LoggerLevel.warn)) {
-					console.warn.apply(console, arguments);
+				if (debug && console && console.warn) {
+					if (isVisible(LoggerLevel.warn)) {
+						console.warn.apply(console, arguments);
+					} else {
+						this.log(arguments);
+					}
 				}
 			},
 			error: function(object /* , object, object... */) {
-				if (console && isVisible(LoggerLevel.error)) {
-					console.error.apply(console, arguments);
+				if (debug && console && console.error) {
+					if (isVisible(LoggerLevel.error)) {
+						console.error.apply(console, arguments);
+					} else {
+						this.log(arguments);
+					}
 				}
 			},
 			group: function(object /* , object, object... */) {
-				if (console) {
+				if (debug && console && console.group) {
 					console.group.apply(console, arguments);
 				}
 			},
 			groupCollapsed: function(object /* , object, object... */) {
-				if (console) {
+				if (debug && console && console.groupCollapsed) {
 					console.groupCollapsed.apply(console, arguments);
 				}
 			},
 			groupEnd: function(object /* , object, object... */) {
-				if (console) {
+				if (debug && console && console.groupEnd) {
 					console.groupEnd.apply(console, arguments);
 				}
 			},
 			trace: function(object /* , object, object... */) {
-				if (console) {
+				if (debug && console && console.trace) {
 					console.trace.apply(console, arguments);
 				}
 			}

@@ -200,3 +200,4 @@ test('Row heights', function() {
 	var rows = [row1, row2, row3, row4];
 	ok(true, 'To be done...');
 });
+

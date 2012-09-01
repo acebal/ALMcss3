@@ -13,7 +13,8 @@ ALMCSS.template = function() {
 		error = logger.error;
 
 	var templates = [],
-		positionedElements = [];
+		positionedElements = [],
+		slotPseudoElements = [];
 
 	// TemplateError
 	// -------------
@@ -24,6 +25,21 @@ ALMCSS.template = function() {
 	};
 
 	TemplateError.prototype = Object.create(AlmcssError);
+
+	// Slot Pseudo Elements
+	// --------------------
+
+	var SlotPseudoElement = function() {
+		this.declarations = [];
+	};
+
+	SlotPseudoElement.prototype.addDeclaration = function(declaration) {
+		this.declarations.push(declaration);
+	};
+
+	SlotPseudoElement.prototype.toString = function() {
+		return this.selector + '::slot(' + this.slotName + ')';
+	};
 
 	// Slot
 	// ----
@@ -138,7 +154,6 @@ ALMCSS.template = function() {
 			return 0;
 		}
 		// The intrinsic preferred width of a letter or '@' is the intrinsic
-		// preferred width as defined by the CSS3 Box Module
 		// preferred width as defined by the CSS3 Box Module
 		this.intrinsicPreferredWidth = preferredWidth(this.htmlElement);
 		return this.intrinsicPreferredWidth;
@@ -354,9 +369,7 @@ ALMCSS.template = function() {
 	// Currently, this function only removes whitespaces (' ').
 
 	var removeSpaces = function(row) {
-		var result = row;
-		result.replace(/\s+/g, ' ');
-		return result;
+		return row.replace(/\s/g, '');
 	};
 
     var containsSlot = function(array, slotName) {
@@ -831,17 +844,24 @@ ALMCSS.template = function() {
 		positionedElements.push(new Position(selectorText, slotName));
 	};
 
+	var addSlotPseudoElement = function(slotPseudoElement) {
+		slotPseudoElements.push(slotPseudoElement);
+	};
+
 	return {
 		templates: templates,
 		positionedElements: positionedElements,
+		slotPseudoElements: slotPseudoElements,
 		TemplateError: TemplateError,
+		SlotPseudoElement: SlotPseudoElement,
 		Slot: Slot,
 		Length: Length,
 		Height: Height,
 		Width: Width,
 		Row: Row,
 		createTemplate: createTemplate,
-		addPositionedElement: addPositionedElement
+		addPositionedElement: addPositionedElement,
+		addSlotPseudoElement: addSlotPseudoElement
 	};
 
 }();

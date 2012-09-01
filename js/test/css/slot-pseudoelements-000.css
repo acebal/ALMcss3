@@ -1,0 +1,20 @@
+#template {
+    grid: "abc";
+}
+
+#template::slot(a) {
+    background-color: red;
+    color: white;
+}
+
+#template::slot(b) {
+    border: 5px solid blue;
+    margin: 2em;
+    color: red;
+}
+
+#template::slot(c) {
+    line-height: 2.6;
+}
+
+

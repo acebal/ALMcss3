@@ -1,8 +1,8 @@
 div#one {
-    display: 'aaa' /auto
-             'bbc' /@
-             'dec' /@
-             'fff' /185px
-             'ghh'
-             @ @ @;
+    grid:   * * 180px
+            'aaa' auto
+            'bbc' *
+            'dec' *
+            'fff' 185px
+            'ghh';
 }

@@ -3,7 +3,8 @@ module('Parser');
 var parser = ALMCSS.stylesheet.parser.Parser,
 	readFile = ALMCSS.stylesheet.parser.readFile,
 	Declaration = ALMCSS.stylesheet.css.Declaration,
-	templates = ALMCSS.template.templates;
+	templates = ALMCSS.template.templates,
+	slotPseudoElements = ALMCSS.template.slotPseudoElements;
 
 var input, ruleSet, rule, declarations, declaration, template,
 	colorRed = new Declaration('color', 'red');
@@ -87,7 +88,7 @@ test('Templates: Basic template', function() {
 	equal(ruleSet.length, 1);
 	rule = ruleSet[0];
 	equal(rule.selectorText, 'div#one');
-	ok(rule.hasProperty('display'));
+	ok(rule.hasProperty(ALMCSS.Config.GRID));
 
 	equal(templates.length, 1, 'One template should have been defined');
 	template = templates[0];
@@ -100,4 +101,12 @@ test('Templates: Basic template', function() {
 		console.info(template);
 	}
 	*/
+});
+
+test('Slot pseudo-element', function() {
+
+	input = readFile('./css/slot-pseudoelements-000.css');
+	ruleSet = parser.parse(input);
+	equal(ruleSet.length, 4);
+	equal(slotPseudoElements.length, 3, 'There should be three slot pseudo-elements');
 });

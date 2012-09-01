@@ -8,9 +8,19 @@ ALMCSS.stylesheet.parser = function() {
 	'use strict';
 
 	var assert = ALMCSS.debug.assert,
-		AssertionError = ALMCSS.debug.AssertionError;
+		AssertionError = ALMCSS.debug.AssertionError,
+		Config = ALMCSS.Config;
 
-	var ASTERISK = '@';
+	// Constants for Specific Values and Properties of the Template Layout Module
+	// --------------------------------------------------------------------------
+
+	var ASTERISK = Config.ASTERISK,
+		GRID_PROPERTY = Config.GRID,
+		FLOW_PROPERTY = Config.FLOW,
+		SLOT_PSEUDO   = Config.SLOT_PSEUDO;
+
+	// Other Constants
+	// ---------------
 
 	var IS_HEX_DIGIT  =  1;
     var START_IDENT   =  2;
@@ -497,12 +507,18 @@ ALMCSS.stylesheet.parser = function() {
         var currentChar;
         var currentSpelling = '';
 
+		var indexOf = function(s, regex, startpos) {
+			var index = s.substring(startpos || 0).search(regex);
+			return (index >= 0) ? (index + (startpos || 0)) : indexOf;
+		};
+
 		var inputAt = function(position) {
 			var startPosition = position - 1,
 				endPosition,
 				endLine;
 
-			endLine = input.indexOf('\n', position);
+			//endLine = input.indexOf('\n', position);
+			endLine = indexOf(input, '\n', position);
 			endPosition = endLine ? endLine : input.length;
 			return input.substring(startPosition, endPosition) + ' [...]';
 		};
@@ -1373,16 +1389,27 @@ ALMCSS.stylesheet.parser = function() {
 			return selectorText;
 		};
 
+		// Slot Pseudo Elements
+		// --------------------
+		var SlotPseudoElement = ALMCSS.template.SlotPseudoElement,
+			isSlotPseudoElement, slotPseudoElement;
+
 		//
 		//     functional_pseudo : FUNCTION S* expression ')'
 		//
 		var parseFunctionalPseudo = function() {
 			assert(currentToken.isFunction(), 'Why has this been called without a function token?');
 			log('Parsing a functional pseudo element or pseudo class selector...');
+			isSlotPseudoElement = currentToken.name === SLOT_PSEUDO;
+			slotPseudoElement = new SlotPseudoElement();
 			var selectorText = currentToken.name + '(';
 			nextToken();
 			parseWhitespace();
-			selectorText = selectorText + parseExpression();
+			var expression = parseExpression();
+			selectorText = selectorText + expression;
+			if (isSlotPseudoElement) {
+				slotPseudoElement.slotName = expression;
+			}
 			match(TokenType.RPAREN, 'while parsing a functional pseudo element or pseudo class');
 			selectorText = selectorText + ')';
 			log('A functional pseudo element or pseudo class was matched: ' + selectorText);
@@ -1458,7 +1485,9 @@ ALMCSS.stylesheet.parser = function() {
 		//
 		var parseSimpleSelectorSequence = function() {
 			log('Parsing a simple selector sequence...');
-			var selectorText = '', hasTypeOrUniversal = false, hasAny = false;
+			var selectorText = '', hasTypeOrUniversal = false, hasAny = false,
+				selector;
+			isSlotPseudoElement = false;
 			if (currentToken.isIdent() || currentToken === Token.ASTERISK) {
 				selectorText = currentToken.isIdent() ? currentToken.name : '*';
 				log('Found a ident or universal selector: ' + selectorText);
@@ -1473,7 +1502,15 @@ ALMCSS.stylesheet.parser = function() {
 				} else if (currentToken === Token.LBRACKET) {
 					selectorText = selectorText + parseAttributeSelector();
 				} else if (currentToken === Token.COLON) {
+					selector = selectorText;
 					selectorText = selectorText + parsePseudoSelector();
+					if (isSlotPseudoElement) {
+						info("Found a 'slot' pseudo-element: %s", selectorText);
+						slotPseudoElement.selector = selector;
+						log(slotPseudoElement.toString());
+						ALMCSS.template.addSlotPseudoElement(slotPseudoElement);
+						info('%s has been added to the list of slot pseudo-elements');
+					}
 				} else if (currentToken === Token.NOT) {
 					selectorText = selectorText + parseNegation();
 				} else {
@@ -1536,7 +1573,7 @@ ALMCSS.stylesheet.parser = function() {
 
 			function isColumnWidht(token) {
 				return token.isDimension() ||
-					token.isDelim(ASTERISK) ||
+					token === Token.ASTERISK ||
 					token === Token.MAX_CONTENT ||
 					token === Token.MIN_CONTENT ||
 					token.type === TokenType.MINMAX ||
@@ -1546,7 +1583,7 @@ ALMCSS.stylesheet.parser = function() {
 			function isRowHeight(token) {
 				return token.isDimension() ||
 					token === Token.AUTO ||
-					token.isDelim(ASTERISK);
+					token === Token.ASTERISK;
 			}
 
 			var cssText = '',
@@ -1566,67 +1603,28 @@ ALMCSS.stylesheet.parser = function() {
 				// The template created
 				template;
 
-			assert(currentToken.isString(), 'Why are we parsing a template without having read a string?');
 			info('Parsing a template definition...');
-			while (currentToken.isString()) {
-				cssText = cssText + '"' + currentToken.value + '"';
-				rowDefinition = currentToken.value;
-				nextToken();
-				parseWhitespace();
-				if (currentToken.isDelim('/')) {
-					cssText = cssText + ' /';
-					nextToken();
-					if (!isRowHeight(currentToken)) {
-						throw new ParsingError("After a slash ('/') a valid value is expected " +
-							"as the height of a row in a template definition: " + currentToken);
-					}
-					// Length
-					if (currentToken.isDimension()) {
-						rowHeight = new Length(currentToken.value, currentToken.unit);
-					// 'auto'
-					} else if (currentToken === Token.AUTO) {
-						rowHeight = Height.auto;
-					// '*' (equal-height row)
-					} else {
-						assert(currentToken.isDelim(ASTERISK));
-						rowHeight = Height.equal;
-					}
-					cssText = cssText + currentToken.lexeme;
-					row = new Row(rowDefinition, rowHeight);
-					// If a row height had been specified for this row, its token
-					// has been consumed and another one needs to be read
-					nextToken();
-				} else {
-					row = new Row(rowDefinition);
-				}
-				rows.push(row);
-				log('A new template row has been matched: ' + row);
-				cssText = cssText + '\n';
-				// We do not need to call to `nextToken` here, since a new token
-				// is already available either because it was not a '/' so the
-				// row height was not scanned and therefore the token was not
-				// consumed; or because the last call to `nextToken` while
-				// scanning the row height
-				parseWhitespace();
-			}
+
+			// Parsing column widths (if they are present)
+			log('First, looking if there are column widths...');
 			while (isColumnWidht(currentToken)) {
 				cssText = cssText + ' ' + currentToken.lexeme;
 				// Length
 				if (currentToken.isDimension()) {
 					columnWidth = new Length(currentToken.value, currentToken.unit);
-				// '*' (equal-width column)
-				} else if (currentToken.isDelim(ASTERISK)) {
+					// '*' (equal-width column)
+				} else if (currentToken === Token.ASTERISK) {
 					columnWidth = Width.equal;
-				// 'max-content'
+					// 'max-content'
 				} else if (currentToken === Token.MAX_CONTENT) {
 					columnWidth = Width.maxContent;
-				// 'min-content'
+					// 'min-content'
 				} else if (currentToken === Token.MIN_CONTENT) {
 					columnWidth = Width.minContent;
-				// minmax(p, q)
+					// minmax(p, q)
 				} else if (currentToken.type === TokenType.MINMAX) {
 					columnWidth = new MinMax(currentToken.p, currentToken.q);
-				// fit-content
+					// fit-content
 				} else {
 					assert(currentToken === Token.FIT_CONTENT);
 					columnWidth = Width.fitContent;
@@ -1639,6 +1637,46 @@ ALMCSS.stylesheet.parser = function() {
 				log('No column widths were specified');
 			} else {
 				log('Column widths: ' + columnWidths);
+			}
+			// Parsing row definitions
+			while (currentToken.isString()) {
+				cssText = cssText + '\n"' + currentToken.value + '"';
+				rowDefinition = currentToken.value;
+				log('Found a row definition: ' + rowDefinition);
+				nextToken();
+				parseWhitespace();
+				if (isRowHeight(currentToken)) {
+					// Length
+					if (currentToken.isDimension()) {
+						rowHeight = new Length(currentToken.value, currentToken.unit);
+					// 'auto'
+					} else if (currentToken === Token.AUTO) {
+						rowHeight = Height.auto;
+					// '*' (equal-height row)
+					} else {
+						assert(currentToken === Token.ASTERISK);
+						rowHeight = Height.equal;
+					}
+					cssText = cssText + ' ' + currentToken.lexeme + '\n';
+					log('Found a row height for that row: ' + rowHeight.lexeme);
+					row = new Row(rowDefinition, rowHeight);
+					// If a row height had been specified for this row, its token
+					// has been consumed and another one needs to be read
+					nextToken();
+				} else {
+					row = new Row(rowDefinition);
+					log('A new template row has been matched: ' + row);
+					// We do not need to call to `nextToken` here, since a new token
+					// is already available either because there were not a row height
+					// so it was not scanned and therefore the token was not consumed;
+					// or because the last call to `nextToken` while scanning the row
+					// height...
+				}
+				rows.push(row);
+				parseWhitespace();
+			}
+			if (rows.length === 0) {
+				throw new ParsingError('A template needs to have at least a row definition');
 			}
 			template = createTemplate(rows, columnWidths, selectorText, cssText);
 			return template;
@@ -1662,11 +1700,11 @@ ALMCSS.stylesheet.parser = function() {
 		//
 		var parseDeclaration = function(rule) {
 
-			// Imports the function to be called when a `position` property
+			// Imports the function to be called when a `flow` property
 			// with a valid value for the Template Layout Module is found,
 			// like, for example:
 			//
-			//     position: a;
+			//     flow: a;
 			//
 			var addPositionedElement = ALMCSS.template.addPositionedElement;
 
@@ -1680,33 +1718,35 @@ ALMCSS.stylesheet.parser = function() {
 				nextToken();
 				parseWhitespace();
 
-				// Is it a `display` property with a template definition as a value?
-				if (property === 'display' && currentToken.isString()) {
-					info("Found a 'display' property with a initial " +
-						'string value: assuming it is a template');
+				// Is it a `grid` property with a template definition as a value?
+				// Note that, according to the new syntax of the module, column
+				// widths, if present, go before than the row definitions, so
+				// there is to test whether the value following a `grid` property
+				// is either a string (a row definition, if this template has no
+				// column widths defined, which is valid) or one of the possible
+				// values for column widths.
+				if (property === GRID_PROPERTY) {
+					info("A 'grid' was found: it is a template definition");
 					isTemplate = true;
 					template = parseTemplateDefinition(rule.selectorText);
-					value = template.cssText;
+					value = template.getCssText();
 					info('A template has been matched:\n' + template);
 
-				// Is it a `position` property with the name of a slot as a value?
-				} else if (property === 'position' && currentToken.isIdent() &&
-						!currentToken.isIdent('absolute') && !currentToken.isIdent('relative') &&
-						!currentToken.isIdent('static') && !currentToken.isIdent('fixed')) {
-					info("Found a 'position' property with a identifier " +
-						'as a value: assuming it is the name of a slot ' +
+				// Is it a `flow` property?
+				} else if (property === FLOW_PROPERTY) {
+					info("A 'flow' property was found: flowing content into a slot " +
 						'(' + rule.selectorText + ' => at slot ' + currentToken.name + ')');
 					addPositionedElement(rule.selectorText, currentToken.name);
 				}
 
-				// For every other CSS property different than `display` and `position`,
-				// or for those `display` and `position` properties with a "normal" value
-				// and that thus do not belong to the Template Layout Module, the parser
+				// For every other CSS property different than `grid` and `flow`,
+				// <del>or for those `grid` and `flow` properties with a "normal" value
+				// and that thus do not belong to the Template Layout Module</del>, the parser
 				// does not need to do anything, since those properties are recognised and
 				// processed by he browser. It simply reads tokens from the lexical scanner
 				// until either a semicolon (';') (end of a declaration) or a right brace
 				// ('}') (end of a rule, in that case the semicolon is optional after the
-				// ast declaration) are found.
+				// last declaration) are found.
 
 				while (currentToken !== Token.SEMICOLON && currentToken !== Token.RBRACE) {
 					previousToken = currentToken;
@@ -1727,6 +1767,9 @@ ALMCSS.stylesheet.parser = function() {
 				declaration = new Declaration(property, value);
 				if (isTemplate) {
 					declaration.template = template;
+				}
+				if (isSlotPseudoElement) {
+					slotPseudoElement.addDeclaration(declaration);
 				}
 				rule.addDeclaration(declaration);
 
