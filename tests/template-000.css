@@ -11,6 +11,19 @@ body {
 
 ul          { flow: d; }
 
+body::slot(a) {
+    background: red;
+}
+
+body::slot(d) {
+    background: green;
+    line-height: 4;
+}
+
+body::slot(b) {
+    font-size: 5em;
+}
+
 body {
     background: #fbf1cd;
     margin: 0;

@@ -178,7 +178,9 @@ var ALMCSS = function() {
 		var templates = ALMCSS.template.templates,
 			createTemplateElements = ALMCSS.template.dom.createTemplateElements,
 			positionedElements = ALMCSS.template.positionedElements,
+			slotPseudoElements = ALMCSS.template.slotPseudoElements,
 			moveElementsIntoSlots = ALMCSS.template.dom.moveElementsIntoSlots,
+			applyStyleToSlots = ALMCSS.template.dom.applyStyleToSlotPseudoElements,
 			LoggerLevel = ALMCSS.debug.LoggerLevel,
 			logger = ALMCSS.debug.getLogger('ALMCSS3 Main Function', LoggerLevel.all),
 			parser = ALMCSS.stylesheet.parser.Parser,
@@ -202,6 +204,7 @@ var ALMCSS = function() {
 
 		createTemplateElements(templates);
 		moveElementsIntoSlots(positionedElements);
+		applyStyleToSlots(slotPseudoElements);
 		doLayout();
 
 		addEvent(window, 'resize', whenResize);
@@ -222,6 +225,7 @@ var ALMCSS = function() {
 			'stylesheet/stylesheet.js', // Loads all the style information (<style> element
 										// and external stylesheets).
 			'stylesheet/css.js',        // A simple CSS Object Model (used by the CSS parser).
+			'template/template.js',
 			'stylesheet/parser.js',     // A CSS parser that recognised the Template Layout
 										// Module properties and values.
 
@@ -229,7 +233,6 @@ var ALMCSS = function() {
 										// intrinsic minimum and intrinsic preferred widths,
 										// computed widths and heights and that sort of things.
 
-			'template/template.js',
 			'template/layout.js',
 			'template/dom.js'
 		], init);

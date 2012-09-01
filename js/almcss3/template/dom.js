@@ -190,17 +190,42 @@ ALMCSS.template.dom = function() {
 
 	};
 
-	/*
-	var paint = function (templates) {
-		for (var i = 0; i < templates.length; i++) {
-			paintTemplate(templates[i]);
-		}
+	var camelCase = function(s) {
+		return s.replace(/-([a-z])/g, function (g) { return g[1].toUpperCase() });
 	};
-	*/
+
+	var applyStyleToSlotPseudoElements = function(slotPseudoElements) {
+
+		var i, j, k, pseudoSlot, elements, element, slotElement, declaration;
+
+		logger.group('Applying style to slot pseudo-elements...');
+		for (i = 0; i < slotPseudoElements.length; i++) {
+			pseudoSlot = slotPseudoElements[i];
+			logger.group('Applying styles to %s...', pseudoSlot);
+			elements = document.querySelectorAll(pseudoSlot.selector);
+			for (j = 0; j < elements.length; j++) {
+				element = elements[j];
+				if (!element.isTemplate) {
+					warn('%s is not a template element', pseudoSlot);
+					continue;
+				}
+				slotElement = element.template.getSlot(pseudoSlot.slotName).htmlElement;
+				for (k = 0; k < pseudoSlot.declarations.length; k++) {
+					declaration = pseudoSlot.declarations[k];
+					log(declaration.toString());
+					slotElement.style[camelCase(declaration.property)] =
+						declaration.value;
+				}
+			}
+			logger.groupEnd();
+		}
+		logger.groupEnd();
+	};
 
 	return {
 		createTemplateElements: createTemplateElements,
 		moveElementsIntoSlots: moveElementsIntoSlots,
+		applyStyleToSlotPseudoElements: applyStyleToSlotPseudoElements,
 		paint: paintTemplate,
 		reset: reset
 	};

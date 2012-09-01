@@ -177,7 +177,7 @@ ALMCSS.domUtils = function() {
 
 	var computeContentHeight = function(element, width) {
 		var result;
-		element.style.width = width;
+		element.style.width = width + 'px';
 		result = getComputedHeight(element);
 		return result;
 	};
