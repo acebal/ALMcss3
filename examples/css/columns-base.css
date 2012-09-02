@@ -1,0 +1,38 @@
+body {
+	font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+	font-size: 0.9em;
+	line-height: 1.4;
+	background: rgb(251, 251, 251);
+}
+
+/* Colors */
+
+h1 {
+	background: rgb(81, 81, 81);
+	color: white;
+}
+
+#one {
+	background:rgb(0, 180, 255);
+	color:  white;
+}
+
+#two {
+	background: rgb(255, 255, 255);
+	color: rgb(81, 81, 81);
+}
+
+#three {
+	background: rgb(238, 238, 238);
+	color: #101101;
+}
+
+/* Typography */
+
+h1 {
+	font-size: 3em;
+}
+
+h2 {
+	font-size: 2.2em;
+}
