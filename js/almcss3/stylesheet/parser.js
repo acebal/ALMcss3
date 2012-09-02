@@ -314,7 +314,7 @@ ALMCSS.stylesheet.parser = function() {
 	// ----
 
 	var HashToken = function(name) {
-		Token.call(this, TokenType.HASH, name);
+		Token.call(this, TokenType.HASH, '#' + name);
 		this.name = name;
 	};
 
@@ -439,7 +439,7 @@ ALMCSS.stylesheet.parser = function() {
 	// --------
 
 	var FunctionToken = function(name) {
-		Token.call(this, TokenType.FUNCTION, name);
+		Token.call(this, TokenType.FUNCTION, name + '(');
 		this.name = name;
 	};
 
@@ -661,7 +661,7 @@ ALMCSS.stylesheet.parser = function() {
 			skipWhitespaces();
 			if (currentChar === ')') {
 				nextChar();
-				return new UriToken(uri);
+				return new UriToken('url(' + uri + ')');
 			}
 			throw new LexicalError('Missing closing paren while scanning an URI token: ' +
 					currentSpelling);
@@ -1277,7 +1277,7 @@ ALMCSS.stylesheet.parser = function() {
 			if (currentToken.type !== expectedToken) {
 				var s = 'A ' + expectedToken + ' was expected, but ' + currentToken + ' was found';
 				if (message) {
-					s = s + '(' + message + ')';
+					s = s + ' (' + message + ')';
 				}
 				throw new ParsingError(s);
 			}
@@ -1509,7 +1509,8 @@ ALMCSS.stylesheet.parser = function() {
 						slotPseudoElement.selector = selector;
 						log(slotPseudoElement.toString());
 						ALMCSS.template.addSlotPseudoElement(slotPseudoElement);
-						info('%s has been added to the list of slot pseudo-elements');
+						info('%s has been added to the list of slot pseudo-elements',
+							slotPseudoElement);
 					}
 				} else if (currentToken === Token.NOT) {
 					selectorText = selectorText + parseNegation();
@@ -1638,6 +1639,9 @@ ALMCSS.stylesheet.parser = function() {
 			} else {
 				log('Column widths: ' + columnWidths);
 			}
+			if (!currentToken.isString()) {
+				throw new ParsingError('A row definition was expected while parsing a template');
+			}
 			// Parsing row definitions
 			while (currentToken.isString()) {
 				cssText = cssText + '\n"' + currentToken.value + '"';
@@ -1658,22 +1662,27 @@ ALMCSS.stylesheet.parser = function() {
 						rowHeight = Height.equal;
 					}
 					cssText = cssText + ' ' + currentToken.lexeme + '\n';
-					log('Found a row height for that row: ' + rowHeight.lexeme);
+					log('Found a row height for that row: ' + currentToken.lexeme);
 					row = new Row(rowDefinition, rowHeight);
 					// If a row height had been specified for this row, its token
 					// has been consumed and another one needs to be read
 					nextToken();
 				} else {
 					row = new Row(rowDefinition);
-					log('A new template row has been matched: ' + row);
-					// We do not need to call to `nextToken` here, since a new token
-					// is already available either because there were not a row height
-					// so it was not scanned and therefore the token was not consumed;
-					// or because the last call to `nextToken` while scanning the row
-					// height...
 				}
-				rows.push(row);
 				parseWhitespace();
+				if (currentToken !== Token.EOF &&
+					currentToken !== Token.SEMICOLON &&
+					currentToken !== Token.RBRACE) {
+					match(TokenType.STRING, 'while parsing a template definition');
+				}
+				log('A new template row has been matched: ' + row);
+				// We do not need to call to `nextToken` here, since a new token
+				// is already available either because there were not a row height
+				// so it was not scanned and therefore the token was not consumed;
+				// or because of the last call to `nextToken` while scanning the
+				// row height.
+				rows.push(row);
 			}
 			if (rows.length === 0) {
 				throw new ParsingError('A template needs to have at least a row definition');
@@ -1774,8 +1783,9 @@ ALMCSS.stylesheet.parser = function() {
 				rule.addDeclaration(declaration);
 
 			} catch (e) {
-				error('A error was found parsing a declaration: it is omitted:\n%s',
+				error('A error was found parsing a declaration and it is omitted:\n%s',
 						lexer.lastInput());
+				error('%s', e.message);
 				while (currentToken !== Token.EOF) {
 					if (currentToken === Token.SEMICOLON ||
 						currentToken === Token.RBRACE) {
@@ -1795,7 +1805,7 @@ ALMCSS.stylesheet.parser = function() {
 		//
 		var parseDeclarationBlock = function(rule) {
 			parseDeclaration(rule);
-			while (currentToken !== Token.RBRACE) {
+			while (currentToken !== Token.EOF && currentToken !== Token.RBRACE) {
 				parseDeclaration(rule);
 			}
 		};

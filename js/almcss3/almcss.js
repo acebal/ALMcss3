@@ -11,6 +11,11 @@ var ALMCSS = function() {
 
 	var SCRIPT_NAME = 'almcss.js';
 
+
+	var isResize = function() {
+		return isResize;
+	};
+
 	if (!Object.create) {
 		Object.create = function(o) {
 			var F = function() {};
@@ -151,6 +156,8 @@ var ALMCSS = function() {
 		logger.info('All done!');
 		logger.groupEnd();
 
+		ALMCSS.Config.isResize = true;
+
 	};
 
 	// Events
@@ -243,7 +250,7 @@ var ALMCSS = function() {
 	return {
 		AlmcssError: AlmcssError,
 		include: module.include,
-		loadModules: loadModules
+		loadModules: loadModules,
 	};
 
 }();

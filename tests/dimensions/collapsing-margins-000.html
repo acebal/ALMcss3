@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/html">
+<head>
+    <meta charset="utf-8" />
+    <title>Collapsing Margins</title>
+    <link rel="stylesheet" href="base.css" type="text/css" />
+    <style>
+
+        #slot1, h1  { padding-left: 40px; }
+
+        #grid1 {
+            position: relative;
+            height: 90px;
+        }
+
+        #slot1 {
+            position: absolute;
+            top: 0; left: 30px;
+            height: 90px;
+        }
+
+        /* The contents of the slot */
+
+        h1 {
+            margin: 25px 0;
+            padding: 20px;
+            font-size: 50px;
+            line-height: 1;
+        }
+
+        /* Colors */
+
+        .grid           { background: #D5DED9; }
+        .slot           { background: #D9CEB2; }
+        h1              { background: #948C75; }
+
+    </style>
+</head>
+<body>
+
+    <div class="grid" id="grid1">
+        <div class="slot" id="slot1">
+            <h1>Collapsing Margins</h1>
+        </div>
+    </div>
+
+    <div id="abstract">
+        <p>This is an example of how <em>collapsing margins</em> work in CSS. And it is what explains the apparently strange behaviour on the former <a href="../../examples/columns-000.html">columns-000.html</a> example (which now has also been added, slightly modified, as the test case <a href="collapsing-margins-001.html">collapsing-margins-001.html</a> . Here, using just CSS 2.1 properties, we are emulating what would be the generated <em>grid</em> in that case, being <code>#grid1</code> the automatically created <code>div</code> for the <em>template</em> (or <em>grid</em>), and <code>#slot1</code> that of the <em>slot</em> containing the <code>h1</code> element.</p>
+    </div>
+
+</body>
+</html>

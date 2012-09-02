@@ -9,11 +9,10 @@ body {
 h1, h2, h3, h4 {
 	color: #333;
 	clear: both;
-	
 }
 
 code {
-	font-size: 1.2em;
+    font-size: 1.2em;
 }
 
 .example {

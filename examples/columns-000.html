@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8" />
+	<title>ALMCSS3 Examples - Equal Width Columns</title>
+	<link rel="stylesheet" href="css/columns-base.css" type="text/css" />
+	<style>
+		
+		#container {
+			grid: "aaa"
+				  "bcd";
+            background: #FF4242;
+		}
+		
+		h1		{ flow: a; }
+		
+		#one 	{ flow: b; }
+		#two	{ flow: c; }
+		#three	{ flow: d; }
+
+        #container::slot(a) {
+            background: rgb(81, 81, 81);
+            color: #eee;
+        }
+
+        #container::slot(b) {
+            background:rgb(0, 180, 255);
+            color:  white;
+        }
+
+        #container::slot(c) {
+            background: rgb(255, 255, 255);
+            color: rgb(81, 81, 81);
+        }
+
+        #container::slot(d) {
+            background: rgb(238, 238, 238);
+            color: #101101;
+        }
+
+        #one, #two, #three, h1 {
+            padding: 30px;
+        }
+
+        h1, h2      { line-height: 1; }
+        h1          { font-size: 3em }
+
+	</style>
+    <script type="text/javascript" src="../js/almcss3/almcss.js"></script>
+</head>
+<body>
+    <div id="container">
+        <h1>Columns</h1>
+        <div id='one'>
+            <h2>One</h2>
+        </div>
+        <div id='two'>
+            <h2>Two</h2>
+        </div>
+        <div id='three'>
+            <h2>Three</h2>
+        </div>
+    </div>
+</body>
+</html>

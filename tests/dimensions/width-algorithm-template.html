@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>ALMCSS3 - Width Algorithm (Tables)</title>
+    <title>ALMCSS3 - Width Algorithm (Template Layout)</title>
     <meta charset=utf-8 />
     <style>
         body {
@@ -20,23 +20,24 @@
 		#three	{ color: rgb(42, 46, 29); }
 
 		#container {
-			display: table;
-			width: 100%;
-			table-layout: fixed;
+            grid: 300px * 500px
+                  "abc" 500px;
+
 		}
 
-		#container div {
-			display: table-cell;
-		}
+        #one    { flow: a; }
+        #two    { flow: b; }
+        #three  { flow: c; }
 
-		#one    { width: 600px; }
-        #two    { width: -moz-fit-content; }
-		#three	{ width: 800px; }
+        #container::slot(a) { background: green; }
+        #container::slot(b) { background: red; }
+        #container::slot(c) { background: blue; }
 
     </style>
+    <script type="text/javascript" src="../../js/almcss3/almcss.js"></script>
 </head>
 <body>
-    <h1>Width Algorithm (Tables)</h1>
+    <h1>Width Algorithm (Template Layout)</h1>
 	<div id="container">
 		<div id="one">
 			<p>A short list:</p>
@@ -47,7 +48,7 @@
 			</ul>
 		</div>
 		<div id="two">
-			<img src="img/niza.jpg" alt="Niza"/>
+			<img src="../img/niza.jpg" alt="Niza"/>
 		</div>
 		<div id="three">
 			<p>This is a supercalifragilisticexpialidocious paragraph that contains a ver long word.</p>

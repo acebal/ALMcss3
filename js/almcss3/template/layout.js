@@ -420,7 +420,7 @@ ALMCSS.template.layout = function () {
 
 				// Get the largest of the minimum heights of rows with a
 				// '*' height that were computed on the previous step.
-				largestHeight = 0
+				largestHeight = 0;
 				for (i = 0; i < rows.length; i++) {
 					if (rows[i].height === Height.equal) {
 						if (rows[i].computedHeight > largestHeight) {

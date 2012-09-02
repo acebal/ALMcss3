@@ -5,7 +5,7 @@
 
 /* This is a comment, next rule should be recognised. */
 
-h2 {
+h6 {
     color: green;
 }
 
@@ -42,26 +42,26 @@ table {
 /* This is a comment */
 
 body {
-    display: "a"
-             "b";
+    grid: "a"
+          "b";
 }
 
-h1  { position: b; }
-p   { position: a; }
+h1  { flow: b; }
+p   { flow: a; }
 
 
 #first-example {
-    display: "ab" /)%&77;   /* Invalid template */
+    grid: "ab" /)%&77;   /* Invalid template */
     color: red;
 }
 
 #second-example {
-    display: "ab";   /* But this is right. */
+    grid: "ab";   /* But this is right. */
 }
 
 
-#examples .one { position: b; }
-#examples .two { position: a; }
+#examples .one { flow: b; }
+#examples .two { flow: a; }
 
 
 
