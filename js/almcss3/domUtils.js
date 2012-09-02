@@ -76,10 +76,10 @@ ALMCSS.domUtils = function() {
 
 		var result, unit;
 		log('Converting %s to pixels...', length);
-		var result = parseInt(length.toString().match(/\d+/), 10);
+		result = parseInt(length.toString().match(/\d+/), 10);
 		assert(!isNaN(result), "%d can not be converted to a numeric value in pixels",
 			length.toString());
-		var unit = length.toString().match(/\D+$/);
+		unit = length.toString().match(/\D+$/);
 		if (unit !== 'px') {
 			warn('A unit other than pixels have been received: %s', unit);
 		}

@@ -250,7 +250,7 @@ var ALMCSS = function() {
 	return {
 		AlmcssError: AlmcssError,
 		include: module.include,
-		loadModules: loadModules,
+		loadModules: loadModules
 	};
 
 }();

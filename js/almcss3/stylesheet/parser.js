@@ -907,7 +907,7 @@ ALMCSS.stylesheet.parser = function() {
 			if (ident === '') {
 				log("Character at ('@') was not followed by a valid identifier, " +
 					'an at token will be returned instead');
-				return Token.AT;
+				return Token.ATKEYWORD;
 			}
 			log('An at keyword was matched: ' +  ident);
 			return new AtKeywordToken(ident);
