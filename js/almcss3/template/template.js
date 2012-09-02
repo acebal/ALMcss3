@@ -179,7 +179,13 @@ ALMCSS.template = function() {
 		assert(this.computedWidth !== undefined, 'For computing the height of ' +
 			'a slot first it is needed to have set its computed width');
 
-		return contentHeight(this.htmlElement, this.computedWidth);
+		var result;
+
+		logger.group('Computing the contents height of slot %s', this.name);
+		result = contentHeight(this.htmlElement, this.computedWidth);
+		info('Content height of slot %s (%o) = %d px', this.name, this, result);
+		logger.groupEnd();
+		return result;
 	};
 
 	Slot.prototype.valueOf = function() {

@@ -7,7 +7,11 @@ ALMCSS.domUtils = function() {
 
 	'use strict';
 
-	var assert = ALMCSS.debug.assert;
+	var assert = ALMCSS.debug.assert,
+		LoggerLevel = ALMCSS.debug.LoggerLevel,
+		logger = ALMCSS.debug.getLogger('DOM Utils', LoggerLevel.all),
+		log = logger.log,
+		info = logger.info;
 
 	// Computed Height and Widths
 	// --------------------------
@@ -48,13 +52,13 @@ ALMCSS.domUtils = function() {
 			borderLeft, borderRight;
 
 		width = getComputedStyleOf(element, 'width');
-		marginLeft = getComputedStyleOf(element, 'margin-left');
-		marginRight = getComputedStyleOf(element, 'margin-right');
+		//marginLeft = getComputedStyleOf(element, 'margin-left');
+		//marginRight = getComputedStyleOf(element, 'margin-right');
 		paddingLeft = getComputedStyleOf(element, 'padding-left');
 		paddingRight = getComputedStyleOf(element, 'padding-right');
 		borderLeft = getComputedStyleOf(element, 'border-left-width');
 		borderRight = getComputedStyleOf(element, 'border-right-width');
-		return width + marginLeft + marginRight +
+		return width + /* marginLeft + marginRight */ +
 				paddingLeft + paddingRight + borderLeft + borderRight;
 	};
 
@@ -65,22 +69,17 @@ ALMCSS.domUtils = function() {
 		var height, marginTop, marginBottom, paddingTop, paddingBottom,
 			borderTop, borderBottom;
 
-		element.style.height = 'auto';
+		log('Getting the computed height of element %o', element);
 
-		//element.style.borderTopWidth = '1px';
-		//element.style.borderBottomWidth = '1px';
 		height = getComputedStyleOf(element, 'height');
-		return height;
-		/*
-		marginTop = getComputedStyleOf(element, 'margin-top');
-		marginBottom = getComputedStyleOf(element, 'margin-bottom');
+		log('Computed height = %d px', height);
 		paddingTop = getComputedStyleOf(element, 'padding-top');
 		paddingBottom = getComputedStyleOf(element, 'padding-bottom');
 		borderTop = getComputedStyleOf(element, 'border-top-width');
 		borderBottom = getComputedStyleOf(element, 'border-bottom-width');
-		return height + marginTop + marginBottom +
+		return height + /* marginTop + marginBottom + */
 			paddingTop + paddingBottom + borderTop + borderBottom;
-		*/
+
 	};
 
 
@@ -100,6 +99,7 @@ ALMCSS.domUtils = function() {
 		element.style.width = length.toString();
 		containerElement.appendChild(element);
 		result = getComputedWidth(element);
+		log('Length %o was converted to %d pixels', length, result);
 		containerElement.removeChild(element);
 		return result;
 	};
@@ -177,8 +177,14 @@ ALMCSS.domUtils = function() {
 
 	var computeContentHeight = function(element, width) {
 		var result;
+		logger.group('Computing the contents height of an element...');
+		log('Current width of %o is %d pixels',
+			element, getComputedWidth(element));
 		element.style.width = width + 'px';
+		log('Width set to %d pixels to compute its height', width);
 		result = getComputedHeight(element);
+		info('Contents height of the element is: %d pixels', result);
+		logger.groupEnd();
 		return result;
 	};
 

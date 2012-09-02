@@ -718,7 +718,7 @@ ALMCSS.template.layout = function () {
 	return {
 		computeTemplateWidths: WidthAlgorithm.computeTemplateWidths,
 		//computeWidths: WidthAlgorithm.computeWidths,
-		computeTemplateHeights: HeightAlgorithm.computeTemplateHeights,
+		computeTemplateHeights: HeightAlgorithm.computeTemplateHeights
 		//computeHeights: HeightAlgorithm.computeHeights
 	};
 
