@@ -352,7 +352,7 @@ test('URLs and URIs - Basic Containment', function() {
 	equal(nextToken().type, t.S);
 	token = nextToken();
 	equal(token.type, t.URI);
-	equal(token.lexeme, 'support/a-green.css');
+	equal(token.lexeme, 'url(support/a-green.css)');
 	equal(nextToken().type, t.SEMICOLON);
 	equal(nextToken().type, t.S);
 
@@ -379,7 +379,7 @@ test('URLs and URIs - Basic Containment', function() {
 	equal(nextToken().type, t.S);
 	token = nextToken();
 	equal(token.type, t.URI);
-	equal(token.lexeme, 'support/c-red.css');
+	equal(token.lexeme, 'url(support/c-red.css)');
 	equal(nextToken().type, t.SEMICOLON);
 	equal(nextToken().type, t.S);
 

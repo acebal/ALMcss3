@@ -73,7 +73,7 @@ ALMCSS.domUtils = function() {
 	// [convert_units] http://stackoverflow.com/questions/4515406/convert-css-units
 
 	var lengthToPixels = function(length, containerElement) {
-
+		/*
 		var result, unit;
 		log('Converting %s to pixels...', length);
 		result = parseInt(length.toString().match(/\d+/), 10);
@@ -85,17 +85,22 @@ ALMCSS.domUtils = function() {
 		}
 		log('The computed value of %s in pixels is %d', length, result);
 		return result;
-		/*
-		 var result, element;
-		 element = document.createElement('div');
-		 element.style.visibility = 'hidden';
-		 element.style.width = length.toString();
-		 containerElement.appendChild(element);
-		 result = getComputedWidth(element);
-		 log('Length %o was converted to %d pixels', length, result);
-		 containerElement.removeChild(element);
-		 return result;
-		 */
+		*/
+
+		var result, unit, element;
+		log('Converting %s to pixels...', length);
+		element = document.createElement('div');
+		element.style.visibility = 'hidden';
+		element.style.width = length.toString();
+		containerElement.appendChild(element);
+		result = getComputedWidth(element);
+		unit = length.toString().match(/\D+$/);
+		if (unit !== 'px') {
+			info('A unit other than pixels have been received: %s', unit);
+		}
+		log('The computed value of %s in pixels is %d', length, result);
+		containerElement.removeChild(element);
+		return result;
 	};
 
 	// Computed Width
@@ -158,9 +163,9 @@ ALMCSS.domUtils = function() {
 		result = height + paddingTop + paddingBottom + borderTop + borderBottom;
 		if (!ALMCSS.Config.isResize) {
 			info('Calculating also top and bottom margins of first and last child, respectively');
-			marginTop = element.firstChild.nodeType === 1 ?
+			marginTop = element.firstChild && element.firstChild.nodeType === 1 ?
 				getComputedStyleOf(element.firstChild, 'margin-top') : 0;
-			marginBottom = element.lastChild.nodeType === 1 ?
+			marginBottom = element.lastChild && element.lastChild.nodeType === 1 ?
 				getComputedStyleOf(element.lastChild, 'margin-bottom') : 0;
 			log('Top margin of first child (%o) is: %d pixels', element.firstChild, marginTop);
 			log('Bottom margin of last child (%o) is: %d pixels', element.lastChild, marginBottom);

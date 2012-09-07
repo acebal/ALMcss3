@@ -372,9 +372,13 @@ ALMCSS.template.layout = function () {
 							}
 						}
 					}
-					info('Computed height of row %d has been set to %d ' +
-						'(the height of its taller single-row slot: %s)',
-						i, rowHeight, largestSlot.name);
+					if (!largestSlot) {
+						logger.warn('Empty row: no slots were defined');
+					} else {
+						info('Computed height of row %d has been set to %d ' +
+							'(the height of its taller single-row slot: %s)',
+							i, rowHeight, largestSlot.name);
+					}
 					rows[i].computedHeight = rowHeight;
 
 					// Once the row has been set a computed height equal to
@@ -538,7 +542,7 @@ ALMCSS.template.layout = function () {
 						log('For row %d, increment of height = %d × %d / %d = %d pixels',
 								i, row.computedHeight, excess, totalHeight, amount);
 						row.computedHeight = row.computedHeight + amount;
-						info('Enlarged row %d from % d to % pixels', i, row.computedHeight, amount);
+						info('Enlarged row %d from %d to %d pixels', i, row.computedHeight, amount);
 					}
 				}
 
@@ -591,6 +595,12 @@ ALMCSS.template.layout = function () {
 							sumOfComputedHeightOfRows);
 						slot.computedHeight = sumOfComputedHeightOfRows;
 						continue;
+					} else {
+						slot.computedHeight = slotHeight;
+						info('The height of the contents of the slot is larger ' +
+							'than the sum of the rows it spans:\n' +
+							'Its computed height is set to that of its contents (%d pixels)',
+							slot.computedHeight);
 					}
 
 					if (slotHeight == sumOfComputedHeightOfRows) {
@@ -642,7 +652,7 @@ ALMCSS.template.layout = function () {
 			var computeSingleRowSlots = function() {
 				var i, j, slots;
 
-				logger.group('Computing single-row slots...');
+				logger.group('Setting the height of the slots themselves...');
 
 				// For each row in the template
 				for (i = 0; i < rows.length; i++) {

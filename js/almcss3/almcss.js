@@ -1,3 +1,73 @@
+/*
+INTELLECTUAL PROPERTY
+
+    ALMcss is a Javascript browser plugin whose aim is to provide an
+    experimental implementation of the CSS3 Template Layout Module
+    (http://www.w3.org/TR/css3-layout/). It has been rewritten by the
+	scratch in 2012 by César Acebal (University of Oviedo). A first
+	version was due to María Rodríguez and Miguel García, as a part
+	of the project "Extensión al estándar CSS3 que permita la adaptación
+	multidispositivo de contenidos web" funded by Fundación CTIC
+    (www.fundacionctic.org), directed by César Acebal as a part of his
+    Ph. D. Thesis at University of Oviedo, advised by Juan M. Cueva
+    (University of Oviedo) and Bert Bos (W3C).
+    
+    ALMcss is licensed to any third party world wide under the provisions
+    of the W3C Software License annexed below, including the provisions of
+    the DISCLAIMER below that also benefits the authors of ALMcss.
+    
+    Copyright © 2012 César Acebal (University of Oviedo). All Rights Reserved.
+                          
+W3C IPR SOFTWARE NOTICE
+
+    http://www.w3.org/Consortium/Legal/2002/copyright-software-20021231
+
+    This W3C work (and included software, documentation such as READMEs,
+    or other related items) is being provided by the copyright holders under
+    the following license. By obtaining, using and/or copying this work, you
+    (the licensee) agree that you have read, understood, and will comply with
+    the following terms and conditions:
+
+    Permission to copy, modify, and distribute
+    this software and its documentation, with or without modification,  for
+    any purpose and without fee or royalty is hereby granted, provided that you
+    include the following on ALL copies of the software and documentation or
+    portions thereof, including modifications, that you make:
+
+       1. The full text of this NOTICE in a location viewable to users of the
+          redistributed or derivative work.
+       2. Any pre-existing intellectual property disclaimers, notices, or
+          terms and conditions. If none exist, a short notice of the following
+          form (hypertext is preferred, text is permitted) should be used
+          within the body of any redistributed or derivative code: "Copyright
+          (c) World Wide Web Consortium, (Massachusetts Institute of
+          Technology, Institut National de Recherche en Informatique et en
+          Automatique, Keio University). All Rights Reserved.
+          http://www.w3.org/Consortium/Legal/"
+       3. Notice of any changes or modifications to the W3C files, including
+          the date changes were made. (We recommend you provide URIs to the
+          location from which the code is derived).
+
+    In addition, creators of derivitive works must include the full text of
+    this NOTICE in a location viewable to users of the derivitive work.
+
+    THIS SOFTWARE AND DOCUMENTATION IS PROVIDED "AS IS," AND COPYRIGHT HOLDERS
+    MAKE NO REPRESENTATIONS OR WARRANTIES, EXPRESS OR IMPLIED, INCLUDING BUT
+    NOT LIMITED TO, WARRANTIES OF MERCHANTABILITY OR FITNESS FOR ANY
+    PARTICULAR PURPOSE OR THAT THE USE OF THE SOFTWARE OR DOCUMENTATION WILL
+    NOT INFRINGE ANY THIRD PARTY PATENTS, COPYRIGHTS, TRADEMARKS OR OTHER
+    RIGHTS.
+
+    COPYRIGHT HOLDERS WILL NOT BE LIABLE FOR ANY DIRECT, INDIRECT, SPECIAL OR
+    CONSEQUENTIAL DAMAGES ARISING OUT OF ANY USE OF THE SOFTWARE OR
+    DOCUMENTATION.
+
+    The name and trademarks of copyright holders may NOT be used in
+    advertising or publicity pertaining to the software without specific,
+    written prior permission. Title to copyright in this software and any
+    associated documentation will at all times remain with copyright holders. 
+*/
+
 var ALMCSS = function() {
 
 	'use strict';
